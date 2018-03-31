@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <stdbool.h>
 
+// compile with:
+// gcc alienfx.c -ggdb -enable-debug-log `pkg-config --libs --cflags libusb-1.0`
+
+
 #define	ALIENWARE_VENDORID		0x187c
 #define	ALIENWARE_PRODUCTID	0x0530
 #define INTERFACE_NUMBER 0
@@ -44,6 +48,7 @@ void initialize(libusb_context** usbcontext, libusb_device_handle** usbhandle, u
 
 void detach(libusb_device_handle* usbhandle, int interface_number)
 {
+  // alternative to claim_interface, I think?
 	if (libusb_kernel_driver_active(usbhandle, interface_number)){
 		int success = libusb_detach_kernel_driver(usbhandle, interface_number);
     if (success < 0){
@@ -53,20 +58,19 @@ void detach(libusb_device_handle* usbhandle, int interface_number)
   }
 }
 
-void attach(libusb_device_handle* usbhandle)
-{
-	int success = libusb_attach_kernel_driver(usbhandle, 0);
-  if(success < 0){
-    fprintf(stderr, "attach_kernel_driver returned with %d", success);
-    exit(0);
-  }
-}
+/* void attach(libusb_device_handle* usbhandle) */
+/* { */
+/* 	int success = libusb_attach_kernel_driver(usbhandle, 0); */
+/*   if(success < 0){ */
+/*     fprintf(stderr, "attach_kernel_driver returned with %d", success); */
+/*     exit(0); */
+/*   } */
+/* } */
 
 int setdelay(libusb_device_handle* usbhandle, unsigned int delay)
 {
 }
-int write(libusb_device_handle* usbhandle, unsigned char* data, unsigned short len)
-{
+/* int write(libusb_device_handle* usbhandle, unsigned char* data, unsigned short len) { */
 	/* int retval; */
 	/* int i; */
 	/* if (len!=SEND_DATA_SIZE) */
@@ -92,9 +96,9 @@ int write(libusb_device_handle* usbhandle, unsigned char* data, unsigned short l
 	/* 	return	LIBUSB_WRITE_ERR; */
 	/* usleep(8000);	 */
 	/* return OK; */
-}
-int read(libusb_device_handle* usbhandle, char* data, unsigned int len)
-{
+/* } */
+
+/* int read(libusb_device_handle* usbhandle, char* data, unsigned int len) { */
 	/* unsigned char buf[READ_DATA_SIZE]; */
 	/* int readbytes; */
 	/* int i; */
@@ -124,6 +128,15 @@ int read(libusb_device_handle* usbhandle, char* data, unsigned int len)
   /*     fprintf(stderr,"%02x ",0xff&((unsigned int)data[i])); */
   /*   } */
 	/* fprintf(stderr,"\n"); */
+/*   return 0; */
+/* } */
+
+void claim_interface(libusb_device_handle * usbhandle, int interface_number){
+  int success = libusb_claim_interface(usbhandle, interface_number);
+  if (success < 0){
+    fprintf(stderr, "error claiming interface with code %d", success);
+    exit(0);
+  }
 }
 
 int main(void)
@@ -131,8 +144,12 @@ int main(void)
 	libusb_context*		usbcontext;
 	libusb_device_handle*	usbhandle;
 
+  // initialize a context and handle
 	initialize(&usbcontext, &usbhandle, ALIENWARE_VENDORID, ALIENWARE_PRODUCTID);
+  // detach any current driver
 	detach(usbhandle, INTERFACE_NUMBER);
+  // claim the interface
+  claim_interface(usbhandle, INTERFACE_NUMBER);
 
   /* example packet FFFF9C8A4A836810h */
 }
