@@ -30,27 +30,26 @@
 
 
 
-void initialize(libusb_context** usbcontext, libusb_device_handle** usbhandle, unsigned short idVendor, unsigned short idProduct) {
-  if (0 == libusb_init(usbcontext)) {
+void initialize(libusb_context** context, libusb_device_handle** handle, unsigned short idVendor, unsigned short idProduct) {
+  if (0 == libusb_init(context)) {
     // TODO add in if statement if we want debugging output
-    libusb_set_debug(*usbcontext,3);
-    if ((*usbhandle = libusb_open_device_with_vid_pid(*usbcontext,idVendor,idProduct))) {
+    libusb_set_debug(*context,3);
+    if ((*handle = libusb_open_device_with_vid_pid(*context,idVendor,idProduct))) {
         fprintf(stderr,"device opened\n");
     } else {
       fprintf(stderr, "failed to open usb device; check idvendor and idproduct");
       exit(0);
     }
   } else {
-    fprintf(stderr, "failed to initialize usbcontext");
+    fprintf(stderr, "failed to initialize context");
     exit(0);
   }
 }
 
-void detach(libusb_device_handle* usbhandle, int interface_number)
-{
+void detach(libusb_device_handle* handle, int interface_number) {
   // alternative to claim_interface, I think?
-	if (libusb_kernel_driver_active(usbhandle, interface_number)){
-		int success = libusb_detach_kernel_driver(usbhandle, interface_number);
+	if (libusb_kernel_driver_active(handle, interface_number)){
+		int success = libusb_detach_kernel_driver(handle, interface_number);
     if (success < 0){
       fprintf(stderr, "kernel driver active, and failed to detached with error %d", success);
         exit(0);
@@ -58,19 +57,18 @@ void detach(libusb_device_handle* usbhandle, int interface_number)
   }
 }
 
-/* void attach(libusb_device_handle* usbhandle) */
-/* { */
-/* 	int success = libusb_attach_kernel_driver(usbhandle, 0); */
-/*   if(success < 0){ */
-/*     fprintf(stderr, "attach_kernel_driver returned with %d", success); */
-/*     exit(0); */
-/*   } */
-/* } */
+void attach(libusb_device_handle* handle, int interface_number) {
+	int success = libusb_attach_kernel_driver(handle, interface_number);
+  if(success < 0){
+    fprintf(stderr, "attach_kernel_driver returned with %d", success);
+    exit(0);
+  }
+}
 
-int setdelay(libusb_device_handle* usbhandle, unsigned int delay)
+int setdelay(libusb_device_handle* handle, unsigned int delay)
 {
 }
-/* int write(libusb_device_handle* usbhandle, unsigned char* data, unsigned short len) { */
+/* int write(libusb_device_handle* handle, unsigned char* data, unsigned short len) { */
 	/* int retval; */
 	/* int i; */
 	/* if (len!=SEND_DATA_SIZE) */
@@ -84,7 +82,7 @@ int setdelay(libusb_device_handle* usbhandle, unsigned int delay)
   /*   } */
 	/* fprintf(stderr,"\n"); */
 
-	/* retval=libusb_control_transfer(usbhandle, */
+	/* retval=libusb_control_transfer(handle, */
   /*                                SEND_REQUEST_TYPE, */
   /*                                SEND_REQUEST, */
   /*                                SEND_VALUE, */
@@ -98,7 +96,7 @@ int setdelay(libusb_device_handle* usbhandle, unsigned int delay)
 	/* return OK; */
 /* } */
 
-/* int read(libusb_device_handle* usbhandle, char* data, unsigned int len) { */
+/* int read(libusb_device_handle* handle, char* data, unsigned int len) { */
 	/* unsigned char buf[READ_DATA_SIZE]; */
 	/* int readbytes; */
 	/* int i; */
@@ -108,7 +106,7 @@ int setdelay(libusb_device_handle* usbhandle, unsigned int delay)
 	/* 	return	LIBUSB_SIZE_ERR; */
 
 	/* readbytes = libusb_control_transfer( */
-  /*                                     usbhandle, */
+  /*                                     handle, */
   /*                                     READ_REQUEST_TYPE, */
   /*                                     READ_REQUEST, */
   /*                                     READ_VALUE, */
@@ -131,25 +129,47 @@ int setdelay(libusb_device_handle* usbhandle, unsigned int delay)
 /*   return 0; */
 /* } */
 
-void claim_interface(libusb_device_handle * usbhandle, int interface_number){
-  int success = libusb_claim_interface(usbhandle, interface_number);
+void claim_interface(libusb_device_handle * handle, int interface_number){
+  int success = libusb_claim_interface(handle, interface_number);
   if (success < 0){
     fprintf(stderr, "error claiming interface with code %d", success);
     exit(0);
   }
 }
 
+void release_interface(libusb_device_handle * handle, int interface_number){
+  int success = libusb_release_interface(handle, interface_number);
+  if (success < 0){
+    fprintf(stderr, "error releasing interface with code %d", success);
+    exit(0);
+  }
+}
+
+void close_and_exit(libusb_device_handle * handle, libusb_context * context){
+  libusb_close(handle);
+  libusb_exit(context);
+}
+
 int main(void)
 {
-	libusb_context*		usbcontext;
-	libusb_device_handle*	usbhandle;
+	libusb_context*		context;
+	libusb_device_handle*	handle;
 
   // initialize a context and handle
-	initialize(&usbcontext, &usbhandle, ALIENWARE_VENDORID, ALIENWARE_PRODUCTID);
+	initialize(&context, &handle, ALIENWARE_VENDORID, ALIENWARE_PRODUCTID);
   // detach any current driver
-	detach(usbhandle, INTERFACE_NUMBER);
+	detach(handle, INTERFACE_NUMBER);
   // claim the interface
-  claim_interface(usbhandle, INTERFACE_NUMBER);
+  claim_interface(handle, INTERFACE_NUMBER);
 
+
+
+
+  // end code
+  release_interface(handle, INTERFACE_NUMBER);
+  attach(handle, INTERFACE_NUMBER);
+  close_and_exit(handle, context);
+
+  printf("FINISHED");
   /* example packet FFFF9C8A4A836810h */
 }
