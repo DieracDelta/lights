@@ -35,13 +35,13 @@ void initialize(libusb_context** context, libusb_device_handle** handle, unsigne
     // TODO add in if statement if we want debugging output
     libusb_set_debug(*context,3);
     if ((*handle = libusb_open_device_with_vid_pid(*context,idVendor,idProduct))) {
-        fprintf(stderr,"device opened\n");
+        fprintf(stderr,"device opened\r\n");
     } else {
-      fprintf(stderr, "failed to open usb device; check idvendor and idproduct");
+      fprintf(stderr, "failed to open usb device; check idvendor and idproduct\r\n");
       exit(0);
     }
   } else {
-    fprintf(stderr, "failed to initialize context");
+    fprintf(stderr, "failed to initialize context\r\n");
     exit(0);
   }
 }
@@ -51,7 +51,7 @@ void detach(libusb_device_handle* handle, int interface_number) {
 	if (libusb_kernel_driver_active(handle, interface_number)){
 		int success = libusb_detach_kernel_driver(handle, interface_number);
     if (success < 0){
-      fprintf(stderr, "kernel driver active, and failed to detached with error %d", success);
+      fprintf(stderr, "kernel driver active, and failed to detached with error %d\r\n", success);
         exit(0);
       }
   }
@@ -60,7 +60,7 @@ void detach(libusb_device_handle* handle, int interface_number) {
 void attach(libusb_device_handle* handle, int interface_number) {
 	int success = libusb_attach_kernel_driver(handle, interface_number);
   if(success < 0){
-    fprintf(stderr, "attach_kernel_driver returned with %d", success);
+    fprintf(stderr, "attach_kernel_driver returned with %d\r\n", success);
     exit(0);
   }
 }
@@ -132,7 +132,7 @@ int setdelay(libusb_device_handle* handle, unsigned int delay)
 void claim_interface(libusb_device_handle * handle, int interface_number){
   int success = libusb_claim_interface(handle, interface_number);
   if (success < 0){
-    fprintf(stderr, "error claiming interface with code %d", success);
+    fprintf(stderr, "error claiming interface with code %d\r\n", success);
     exit(0);
   }
 }
@@ -140,7 +140,7 @@ void claim_interface(libusb_device_handle * handle, int interface_number){
 void release_interface(libusb_device_handle * handle, int interface_number){
   int success = libusb_release_interface(handle, interface_number);
   if (success < 0){
-    fprintf(stderr, "error releasing interface with code %d", success);
+    fprintf(stderr, "error releasing interface with code %d\r\n", success);
     exit(0);
   }
 }
@@ -148,6 +148,24 @@ void release_interface(libusb_device_handle * handle, int interface_number){
 void close_and_exit(libusb_device_handle * handle, libusb_context * context){
   libusb_close(handle);
   libusb_exit(context);
+
+}
+
+
+void write_to_fx(libusb_device_handle * handle, char * packet, int size){
+  int unlimited_timeout = 0;
+  int num_bytes_written = libusb_control_transfer(handle,
+                                                  SEND_REQUEST_TYPE,
+                                                  SEND_REQUEST,
+                                                  SEND_VALUE,
+                                                  SEND_INDEX,
+                                                  packet,
+                                                  size,
+                                                  unlimited_timeout);
+  if(num_bytes_written != size){
+    fprintf(stderr, "Tried to write %d bytes but only wrote %d bytes \r\n", size, num_bytes_written);
+  }
+
 }
 
 int main(void)
@@ -155,12 +173,17 @@ int main(void)
 	libusb_context*		context;
 	libusb_device_handle*	handle;
 
+  // init code
   // initialize a context and handle
 	initialize(&context, &handle, ALIENWARE_VENDORID, ALIENWARE_PRODUCTID);
   // detach any current driver
 	detach(handle, INTERFACE_NUMBER);
   // claim the interface
   claim_interface(handle, INTERFACE_NUMBER);
+
+  char * packet;
+  int size = 69;
+  write_to_fx(handle, packet, size);
 
 
 
@@ -170,6 +193,6 @@ int main(void)
   attach(handle, INTERFACE_NUMBER);
   close_and_exit(handle, context);
 
-  printf("FINISHED");
+  fprintf(stderr, "FINISHED successfully\r\n");
   /* example packet FFFF9C8A4A836810h */
 }
