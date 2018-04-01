@@ -1,8 +1,9 @@
+#include <./alienfx.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <libusb-1.0/libusb.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <libusb-1.0/libusb.h>
 
 // the underlying protocol was heavily borrowed by https://github.com/erlkonig/alienfx
 
@@ -205,8 +206,8 @@ void complete_write_to_fx(libusb_device_handle * handle, int block, uint region,
 
 }
 
-int main(void)
-{
+
+int perform_action(int region, int red, int green, int blue) {
 	libusb_context*		context;
 	libusb_device_handle*	handle;
 
@@ -222,7 +223,7 @@ int main(void)
 
   /* complete_write_to_fx(handle, BLOCK_CHARGING, KB_FAR_LEFT, 0, 0, 0, INTERFACE_NUMBER); */
   /* usleep(9000); */
-  complete_write_to_fx(handle, BLOCK_CHARGING, ALL_THE_THINGS, 255, 0, 0, INTERFACE_NUMBER);
+  complete_write_to_fx(handle, BLOCK_CHARGING, region, red, green, blue, INTERFACE_NUMBER);
 
 
   // end code
@@ -231,4 +232,12 @@ int main(void)
   close_and_exit(handle, context);
 
   fprintf(stderr, "FINISHED successfully\r\n");
+}
+
+void poweroff_lights(){
+  perform_action(ALL_THE_THINGS, 0, 0, 0);
+}
+
+void power_red_lights(){
+  perform_action(ALL_THE_THINGS, 255, 0, 0);
 }
