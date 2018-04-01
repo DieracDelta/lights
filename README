@@ -1,1 +1,12 @@
-WIP do not use
+This is a working proof of concept for the alienware 15 r3 to control its LEDs through the libusb C API. It heavily draws upon code found at https://github.com/erlkonig/alienfx and the code it was influenced by.
+
+To compile, run: 
+
+gcc alienfx.c `pkg-config --libs --cflags libusb-1.0` -o alienfx
+
+This was tested on gentoo; support for other distros *should* work. To execute, run the output, run:
+
+./alienfx
+
+Change the inputs and recompile to change the colors.
+
