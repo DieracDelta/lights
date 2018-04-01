@@ -1,5 +1,0 @@
-device opened
-LIBUSB_ERROR_TIMEOUT -7
-LIBUSB_ERROR_PIPE -9
-LIBUSB_ERROR_NO_DEVICE -4
-readbytes ERROR was -8 
