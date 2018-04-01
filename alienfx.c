@@ -128,66 +128,6 @@ void attach(libusb_device_handle* handle, int interface_number) {
 int setdelay(libusb_device_handle* handle, unsigned int delay)
 {
 }
-/* int write(libusb_device_handle* handle, unsigned char* data, unsigned short len) { */
-	/* int retval; */
-	/* int i; */
-	/* if (len!=SEND_DATA_SIZE) */
-	/* 	return	LIBUSB_SIZE_ERR; */
-
-
-	/* fprintf(stderr,"write> "); */
-	/* for (i=0;i<SEND_DATA_SIZE;i++)  */
-  /*   { */
-  /*     fprintf(stderr,"%02x ",0xff&((unsigned int)data[i])); */
-  /*   } */
-	/* fprintf(stderr,"\n"); */
-
-	/* retval=libusb_control_transfer(handle, */
-  /*                                SEND_REQUEST_TYPE, */
-  /*                                SEND_REQUEST, */
-  /*                                SEND_VALUE, */
-  /*                                SEND_INDEX, */
-  /*                                data, */
-  /*                                SEND_DATA_SIZE, */
-  /*                                0); */
-	/* if (retval!=SEND_DATA_SIZE) */
-	/* 	return	LIBUSB_WRITE_ERR; */
-	/* usleep(8000);	 */
-	/* return OK; */
-/* } */
-
-/* int read(libusb_device_handle* handle, char* data, unsigned int len) { */
-	/* unsigned char buf[READ_DATA_SIZE]; */
-	/* int readbytes; */
-	/* int i; */
-
-  /* // sanity check */
-	/* if (len!=READ_DATA_SIZE) */
-	/* 	return	LIBUSB_SIZE_ERR; */
-
-	/* readbytes = libusb_control_transfer( */
-  /*                                     handle, */
-  /*                                     READ_REQUEST_TYPE, */
-  /*                                     READ_REQUEST, */
-  /*                                     READ_VALUE, */
-  /*                                     READ_INDEX, */
-  /*                                     buf, */
-  /*                                     READ_DATA_SIZE, */
-  /*                                     0); */
-	/* if (readbytes!=READ_DATA_SIZE){ */
-  /*   // -8 is a LIBUSB_ERROR_OVERFLOW error */
-  /*   exit(0); */
-	/* 	return LIBUSB_READ_ERR; */
-  /* } */
-	/* fprintf(stderr,"read>  "); */
-	/* for (i=0;i<READ_DATA_SIZE;i++)  */
-  /*   { */
-  /*     data[i]=buf[i]; */
-  /*     fprintf(stderr,"%02x ",0xff&((unsigned int)data[i])); */
-  /*   } */
-	/* fprintf(stderr,"\n"); */
-/*   return 0; */
-/* } */
 
 void claim_interface(libusb_device_handle * handle, int interface_number){
   int success = libusb_claim_interface(handle, interface_number);
@@ -282,7 +222,7 @@ int main(void)
 
   /* complete_write_to_fx(handle, BLOCK_CHARGING, KB_FAR_LEFT, 0, 0, 0, INTERFACE_NUMBER); */
   /* usleep(9000); */
-  complete_write_to_fx(handle, BLOCK_CHARGING, ALL_THE_THINGS, 69, 69, 69, INTERFACE_NUMBER);
+  complete_write_to_fx(handle, BLOCK_CHARGING, ALL_THE_THINGS, 255, 0, 0, INTERFACE_NUMBER);
 
 
   // end code
