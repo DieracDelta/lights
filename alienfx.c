@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <libusb-1.0/libusb.h>
+#include <string.h>
 
 // the underlying protocol was heavily borrowed by https://github.com/erlkonig/alienfx
 
@@ -28,7 +29,7 @@
 #define	READ_REQUEST		0x01
 #define	READ_VALUE		0x101
 #define	READ_INDEX		0x0
-#define	READ_DATA_SIZE		9
+#define	READ_DATA_SIZE		69
 
 #define	MIN_SPEED		100
 #define	MAX_SPEED		1000
@@ -207,7 +208,7 @@ void complete_write_to_fx(libusb_device_handle * handle, int block, uint region,
 }
 
 
-int perform_action(int region, int red, int green, int blue) {
+void perform_action(int region, int red, int green, int blue) {
 	libusb_context*		context;
 	libusb_device_handle*	handle;
 
@@ -222,8 +223,8 @@ int perform_action(int region, int red, int green, int blue) {
 
 
   /* complete_write_to_fx(handle, BLOCK_CHARGING, KB_FAR_LEFT, 0, 0, 0, INTERFACE_NUMBER); */
-  /* usleep(9000); */
   complete_write_to_fx(handle, BLOCK_CHARGING, region, red, green, blue, INTERFACE_NUMBER);
+  usleep(9001);
 
 
   // end code
@@ -240,4 +241,78 @@ void poweroff_lights(){
 
 void power_red_lights(){
   perform_action(ALL_THE_THINGS, 255, 0, 0);
+}
+
+static uint r = 0;
+static uint g = 0;
+static uint b = 0;
+static bool initialized = false;
+
+void up_it_red(){
+  if(!initialized){
+    perform_action(0xffffff, 0, 0, 0);
+    r = 0, g = 0, b = 0;
+    initialized = true;
+  }
+  r += 10;
+  r &= 0xff;
+  perform_action(0xffffff, r, g, b);
+
+}
+
+void up_it_green(){
+  if(!initialized){
+    perform_action(0xffffff, 0, 0, 0);
+    r = 0, g = 0, b = 0;
+    initialized = true;
+  }
+  g += 10;
+  g &= 0xff;
+  perform_action(0xffffff, r, g, b);
+}
+
+void up_it_blue(){
+  if(!initialized){
+    perform_action(0xffffff, 0, 0, 0);
+    r = 0, g = 0, b = 0;
+    initialized = true;
+  }
+  b += 10;
+  b &= 0xff;
+  perform_action(0xffffff, r, g, b);
+}
+
+
+void down_it_red(){
+  if(!initialized){
+    perform_action(0xffffff, 0, 0, 0);
+    r = 0, g = 0, b = 0;
+    initialized = true;
+  }
+  r -= 10;
+  r &= 0xff;
+  perform_action(0xffffff, r, g, b);
+
+}
+
+void down_it_green(){
+  if(!initialized){
+    perform_action(0xffffff, 0, 0, 0);
+    r = 0, g = 0, b = 0;
+    initialized = true;
+  }
+  g -= 10;
+  g &= 0xff;
+  perform_action(0xffffff, r, g, b);
+}
+
+void down_it_blue(){
+  if(!initialized){
+    perform_action(0xffffff, 0, 0, 0);
+    r = 0, g = 0, b = 0;
+    initialized = true;
+  }
+  b -= 10;
+  b &= 0xff;
+  perform_action(0xffffff, r, g, b);
 }
