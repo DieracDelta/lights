@@ -13,6 +13,11 @@
 // to compile without debugging symbols
 // gcc alienfx.c `pkg-config --libs --cflags libusb-1.0`
 
+// compile with flag only if you want to write to path in order to integrate with slstatus
+// TODO replace specific path with general path
+// TODO should probably write to tmp instead of random directory
+#define WRITEPATH 1
+
 
 
 #define	ALIENWARE_VENDORID		0x187c
@@ -90,7 +95,17 @@
 #define TRACKPAD 0x80
 
 
-
+void update_file(const char * filename, int val){
+  printf("FUCK1\r\n");
+  FILE * the_file = fopen(filename, "w+");
+  if(the_file == NULL){
+    printf("PATH ERROR!");
+    exit(0);
+  }
+  printf("FUCK2 %p", the_file);
+  fprintf(the_file, "%d", val);
+  fclose(the_file);
+}
 
 void initialize(libusb_context** context, libusb_device_handle** handle, unsigned short idVendor, unsigned short idProduct) {
   if (0 == libusb_init(context)) {
@@ -257,7 +272,9 @@ void up_it_red(){
   r += 10;
   r &= 0xff;
   perform_action(0xffffff, r, g, b);
-
+#ifdef WRITEPATH
+  update_file("/home/dieraca/.config/slstatus/.r", r);
+#endif
 }
 
 void up_it_green(){
@@ -269,6 +286,9 @@ void up_it_green(){
   g += 10;
   g &= 0xff;
   perform_action(0xffffff, r, g, b);
+#ifdef WRITEPATH
+  update_file("/home/dieraca/.config/slstatus/.g", g);
+#endif
 }
 
 void up_it_blue(){
@@ -280,6 +300,9 @@ void up_it_blue(){
   b += 10;
   b &= 0xff;
   perform_action(0xffffff, r, g, b);
+#ifdef WRITEPATH
+  update_file("/home/dieraca/.config/slstatus/.b", b);
+#endif
 }
 
 
@@ -292,7 +315,9 @@ void down_it_red(){
   r -= 10;
   r &= 0xff;
   perform_action(0xffffff, r, g, b);
-
+#ifdef WRITEPATH
+  update_file("/home/dieraca/.config/slstatus/.r", r);
+#endif
 }
 
 void down_it_green(){
@@ -304,6 +329,9 @@ void down_it_green(){
   g -= 10;
   g &= 0xff;
   perform_action(0xffffff, r, g, b);
+#ifdef WRITEPATH
+  update_file("/home/dieraca/.config/slstatus/.g", g);
+#endif
 }
 
 void down_it_blue(){
@@ -315,4 +343,9 @@ void down_it_blue(){
   b -= 10;
   b &= 0xff;
   perform_action(0xffffff, r, g, b);
+#ifdef WRITEPATH
+  update_file("/home/dieraca/.config/slstatus/.b", b);
+#endif
 }
+
+
