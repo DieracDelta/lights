@@ -103,8 +103,20 @@ void update_file(const char * filename, int val){
     exit(0);
   }
   printf("FUCK2 %p", the_file);
-  fprintf(the_file, "%d", val);
+  fprintf(the_file, "%x", val);
   fclose(the_file);
+}
+
+int read_file(const char * filename){
+  FILE * the_file = fopen(filename, "r");
+  if(the_file == NULL){
+    printf("PATH ERROR!");
+    exit(0);
+  }
+  int val;
+  fscanf(the_file, "%x", &val);
+  fclose(the_file);
+  return val;
 }
 
 void initialize(libusb_context** context, libusb_device_handle** handle, unsigned short idVendor, unsigned short idProduct) {
@@ -349,3 +361,14 @@ void down_it_blue(){
 }
 
 
+int get_red(){
+  return read_file("/home/dieraca/.config/slstatus/.r");
+}
+
+int get_blue(){
+  return read_file("/home/dieraca/.config/slstatus/.b");
+}
+
+int get_green(){
+  return read_file("/home/dieraca/.config/slstatus/.g");
+}

@@ -19,4 +19,10 @@ void down_it_green();
 
 void down_it_blue();
 
+int get_red();
+
+int get_green();
+
+int get_blue();
+
 #endif
