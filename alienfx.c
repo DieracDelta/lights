@@ -95,11 +95,14 @@
 #define RED_PATH "/home/dieraca/.config/slstatus/.r"
 #define GREEN_PATH "/home/dieraca/.config/slstatus/.g"
 #define BLUE_PATH "/home/dieraca/.config/slstatus/.b"
+#define TYPE_PATH "/home/dieraca/.config/slstatus/.type"
 #define LOW_POWER_PATH "/home/dieraca/.config/slstatus/.low_bat"
 
+// shouldn't need values but better safe than sorry...
 static uint r = 0;
 static uint g = 0;
 static uint b = 0;
+static uint t = COMMAND_SET_COLOR;
 static bool initialized = false;
 
 
@@ -113,6 +116,7 @@ void update_file(const char * filename, int val){
   fclose(the_file);
 }
 
+
 int read_file(const char * filename){
   FILE * the_file = fopen(filename, "r");
   if(the_file == NULL){
@@ -123,6 +127,10 @@ int read_file(const char * filename){
   fscanf(the_file, "%x", &val);
   fclose(the_file);
   return val;
+}
+
+int get_type(){
+  return read_file(TYPE_PATH);
 }
 
 void initialize(libusb_context** context, libusb_device_handle** handle, unsigned short idVendor, unsigned short idProduct) {
@@ -204,7 +212,7 @@ void single_write_to_fx(libusb_device_handle * handle, char * packet, int size){
 }
 
 
-void complete_write_to_fx(libusb_device_handle * handle, int block, uint region, int r, int g, int b, int interface_number){
+void complete_write_to_fx(libusb_device_handle * handle, int block, uint region, int r, int g, int b, int interface_number, int type){
 
   unsigned char data1[] = { START_BYTE, COMMAND_RESET,
                             (unsigned char)RESET_ALL_LIGHTS_ON};
@@ -221,7 +229,7 @@ void complete_write_to_fx(libusb_device_handle * handle, int block, uint region,
   char reg2 = (char)((region >>  8) & 0xff);
   char reg3 = (char)((region >>  0) & 0xff);
 
-  char data[] = { START_BYTE, COMMAND_SET_COLOR,
+  char data[] = { START_BYTE, type,
                   block,
                   reg1, // 0xff for *all* regions
                   reg2, // 0xff for *all* regions
@@ -241,7 +249,7 @@ void complete_write_to_fx(libusb_device_handle * handle, int block, uint region,
 }
 
 
-void perform_action(int region, int red, int green, int blue) {
+void perform_action(int region, int red, int green, int blue, int type) {
 	libusb_context*		context;
 	libusb_device_handle*	handle;
 
@@ -256,7 +264,7 @@ void perform_action(int region, int red, int green, int blue) {
 
 
   /* complete_write_to_fx(handle, BLOCK_CHARGING, KB_FAR_LEFT, 0, 0, 0, INTERFACE_NUMBER); */
-  complete_write_to_fx(handle, BLOCK_CHARGING, region, red, green, blue, INTERFACE_NUMBER);
+  complete_write_to_fx(handle, BLOCK_CHARGING, region, red, green, blue, INTERFACE_NUMBER, type);
   usleep(9001);
 
 
@@ -270,30 +278,30 @@ void perform_action(int region, int red, int green, int blue) {
 
 void check_and_initialize_lights(){
   if(!initialized){
-    r = get_red(), g = get_green(), b = get_blue();
-    perform_action(0xffffff, r, g, b);
+    r = get_red(), g = get_green(), b = get_blue(), t = get_type();
+    perform_action(0xffffff, r, g, b, t);
     initialized = true;
   }
 }
 
 void power_off_lights(){
-  perform_action(ALL_THE_THINGS, 0, 0, 0);
+  perform_action(ALL_THE_THINGS, 0, 0, 0, t);
 }
 
 void power_on_lights(){
   check_and_initialize_lights();
-  perform_action(ALL_THE_THINGS,r,g,b);
+  perform_action(ALL_THE_THINGS,r,g,b,t);
 }
 
 void power_red_lights(){
-  perform_action(ALL_THE_THINGS, 255, 0, 0);
+  perform_action(ALL_THE_THINGS, 255, 0, 0, t);
 }
 
 void up_it_red(){
   check_and_initialize_lights();
   r += 10;
   r &= 0xff;
-  perform_action(0xffffff, r, g, b);
+  perform_action(0xffffff, r, g, b, t);
 #ifdef WRITEPATH
   update_file(RED_PATH, r);
 #endif
@@ -303,7 +311,7 @@ void up_it_green(){
   check_and_initialize_lights();
   g += 10;
   g &= 0xff;
-  perform_action(0xffffff, r, g, b);
+  perform_action(0xffffff, r, g, b, t);
 #ifdef WRITEPATH
   update_file(GREEN_PATH, g);
 #endif
@@ -313,7 +321,7 @@ void up_it_blue(){
   check_and_initialize_lights();
   b += 10;
   b &= 0xff;
-  perform_action(0xffffff, r, g, b);
+  perform_action(0xffffff, r, g, b, t);
 #ifdef WRITEPATH
   update_file(BLUE_PATH, b);
 #endif
@@ -323,7 +331,7 @@ void down_it_red(){
   check_and_initialize_lights();
   r -= 10;
   r &= 0xff;
-  perform_action(0xffffff, r, g, b);
+  perform_action(0xffffff, r, g, b, t);
 #ifdef WRITEPATH
   update_file(RED_PATH, r);
 #endif
@@ -333,7 +341,7 @@ void down_it_green(){
   check_and_initialize_lights();
   g -= 10;
   g &= 0xff;
-  perform_action(0xffffff, r, g, b);
+  perform_action(0xffffff, r, g, b, t);
 #ifdef WRITEPATH
   update_file(GREEN_PATH, g);
 #endif
@@ -343,7 +351,7 @@ void down_it_blue(){
   check_and_initialize_lights();
   b -= 10;
   b &= 0xff;
-  perform_action(0xffffff, r, g, b);
+  perform_action(0xffffff, r, g, b, t);
 #ifdef WRITEPATH
   update_file(BLUE_PATH, b);
 #endif
@@ -360,6 +368,7 @@ int get_blue(){
 int get_green(){
   return read_file(RED_PATH);
 }
+
 
 void low_power_mode(bool turnOn){
   check_and_initialize_lights();
@@ -404,9 +413,26 @@ void low_power_mode(bool turnOn){
   } else{
     // disable
     if(read_file("/home/dieraca/.config/slstatus/.low_bat") != 0){
-      perform_action(0xffffff, r, g, b);
+      perform_action(0xffffff, r, g, b, t);
       update_file("/home/dieraca/.config/slstatus/.low_bat", 0);
     }
   }
+}
 
+void make_blinky(){
+  check_and_initialize_lights();
+  t = COMMAND_SET_BLINK_COLOR;
+  perform_action(0xffffff, r, g, b, t);
+#ifdef WRITEPATH
+  update_file(TYPE_PATH, t);
+#endif
+}
+
+void make_solid(){
+  check_and_initialize_lights();
+  t = COMMAND_SET_COLOR;
+  perform_action(0xffffff, r, g, b, t);
+#ifdef WRITEPATH
+  update_file(TYPE_PATH, t);
+#endif
 }

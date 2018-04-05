@@ -30,6 +30,12 @@ int get_green();
 
 int get_blue();
 
+int get_type();
+
 void low_power_mode(bool isOn);
+
+void make_blinky();
+
+void make_solid();
 
 #endif
