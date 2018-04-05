@@ -1,6 +1,8 @@
 #ifndef ALIENFX_H_
 #define ALIENFX_H_
 
+#include <stdbool.h>
+
 /* #include <libusb-1.0/libusb.h> */
 
 void poweroff_lights();
@@ -24,5 +26,7 @@ int get_red();
 int get_green();
 
 int get_blue();
+
+void low_power_mode(bool isOn);
 
 #endif

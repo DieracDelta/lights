@@ -96,13 +96,11 @@
 
 
 void update_file(const char * filename, int val){
-  printf("FUCK1\r\n");
   FILE * the_file = fopen(filename, "w+");
   if(the_file == NULL){
     printf("PATH ERROR!");
     exit(0);
   }
-  printf("FUCK2 %p", the_file);
   fprintf(the_file, "%x", val);
   fclose(the_file);
 }
@@ -259,7 +257,7 @@ void perform_action(int region, int red, int green, int blue) {
   attach(handle, INTERFACE_NUMBER);
   close_and_exit(handle, context);
 
-  fprintf(stderr, "FINISHED successfully\r\n");
+  /* fprintf(stderr, "FINISHED successfully\r\n"); */
 }
 
 void poweroff_lights(){
@@ -277,8 +275,8 @@ static bool initialized = false;
 
 void up_it_red(){
   if(!initialized){
+    r = get_red(), g = get_green(), b = get_blue();
     perform_action(0xffffff, 0, 0, 0);
-    r = 0, g = 0, b = 0;
     initialized = true;
   }
   r += 10;
@@ -291,8 +289,8 @@ void up_it_red(){
 
 void up_it_green(){
   if(!initialized){
+    r = get_red(), g = get_green(), b = get_blue();
     perform_action(0xffffff, 0, 0, 0);
-    r = 0, g = 0, b = 0;
     initialized = true;
   }
   g += 10;
@@ -305,8 +303,8 @@ void up_it_green(){
 
 void up_it_blue(){
   if(!initialized){
+    r = get_red(), g = get_green(), b = get_blue();
     perform_action(0xffffff, 0, 0, 0);
-    r = 0, g = 0, b = 0;
     initialized = true;
   }
   b += 10;
@@ -320,8 +318,8 @@ void up_it_blue(){
 
 void down_it_red(){
   if(!initialized){
+    r = get_red(), g = get_green(), b = get_blue();
     perform_action(0xffffff, 0, 0, 0);
-    r = 0, g = 0, b = 0;
     initialized = true;
   }
   r -= 10;
@@ -334,8 +332,8 @@ void down_it_red(){
 
 void down_it_green(){
   if(!initialized){
+    r = get_red(), g = get_green(), b = get_blue();
     perform_action(0xffffff, 0, 0, 0);
-    r = 0, g = 0, b = 0;
     initialized = true;
   }
   g -= 10;
@@ -348,8 +346,8 @@ void down_it_green(){
 
 void down_it_blue(){
   if(!initialized){
+    r = get_red(), g = get_green(), b = get_blue();
     perform_action(0xffffff, 0, 0, 0);
-    r = 0, g = 0, b = 0;
     initialized = true;
   }
   b -= 10;
@@ -371,4 +369,56 @@ int get_blue(){
 
 int get_green(){
   return read_file("/home/dieraca/.config/slstatus/.g");
+}
+
+void low_power_mode(bool turnOn){
+  if(!initialized){
+    r = get_red(), g = get_green(), b = get_blue();
+    perform_action(0xffffff, 0, 0, 0);
+    initialized = true;
+  }
+  if(turnOn){
+    if(read_file("/home/dieraca/.config/slstatus/.low_bat") == 1)
+      return;
+    libusb_context*		context;
+    libusb_device_handle*	handle;
+    //enable
+    initialize(&context, &handle, ALIENWARE_VENDORID, ALIENWARE_PRODUCTID);
+    // detach any current driver
+    detach(handle, INTERFACE_NUMBER);
+    // claim the interface
+    claim_interface(handle, INTERFACE_NUMBER);
+
+    /* complete_write_to_fx(handle, BLOCK_CHARGING, KB_FAR_LEFT, 0, 0, 0, INTERFACE_NUMBER); */
+    unsigned char data1[] = { START_BYTE, COMMAND_RESET,
+                              (unsigned char)RESET_ALL_LIGHTS_ON};
+
+    single_write_to_fx(handle, data1, sizeof(data1));
+
+    char data[] = { START_BYTE, COMMAND_SET_BLINK_COLOR,
+                    0x01,
+                    0xff, // 0xff for *all* regions
+                    0xff, // 0xff for *all* regions
+                    0xff, // 0xff for *all* regions
+                    0xff,
+                    0,
+                    0};
+    single_write_to_fx(handle, data, sizeof(data));
+    usleep(9001);
+    char data2[] = { START_BYTE, COMMAND_LOOP_BLOCK_END };
+    single_write_to_fx(handle, data2, sizeof(data2));
+    char data3[] = { START_BYTE, COMMAND_TRANSMIT_EXECUTE};
+    single_write_to_fx(handle, data3, sizeof(data3));
+    release_interface(handle, INTERFACE_NUMBER);
+    attach(handle, INTERFACE_NUMBER);
+    close_and_exit(handle, context);
+    update_file("/home/dieraca/.config/slstatus/.low_bat", 1);
+  } else{
+    // disable
+    if(read_file("/home/dieraca/.config/slstatus/.low_bat") != 0){
+      perform_action(0xffffff, r, g, b);
+      update_file("/home/dieraca/.config/slstatus/.low_bat", 0);
+    }
+  }
+
 }
