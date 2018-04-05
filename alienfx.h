@@ -3,9 +3,12 @@
 
 #include <stdbool.h>
 
+
 /* #include <libusb-1.0/libusb.h> */
 
-void poweroff_lights();
+void power_off_lights();
+
+void power_on_lights();
 
 void power_red_lights();
 

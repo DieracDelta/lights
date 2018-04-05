@@ -14,11 +14,8 @@
 // gcc alienfx.c `pkg-config --libs --cflags libusb-1.0`
 
 // compile with flag only if you want to write to path in order to integrate with slstatus
-// TODO replace specific path with general path
 // TODO should probably write to tmp instead of random directory
 #define WRITEPATH 1
-
-
 
 #define	ALIENWARE_VENDORID		0x187c
 #define	ALIENWARE_PRODUCTID	0x0530
@@ -95,6 +92,17 @@
 #define TRACKPAD 0x80
 
 
+#define RED_PATH "/home/dieraca/.config/slstatus/.r"
+#define GREEN_PATH "/home/dieraca/.config/slstatus/.g"
+#define BLUE_PATH "/home/dieraca/.config/slstatus/.b"
+#define LOW_POWER_PATH "/home/dieraca/.config/slstatus/.low_bat"
+
+static uint r = 0;
+static uint g = 0;
+static uint b = 0;
+static bool initialized = false;
+
+
 void update_file(const char * filename, int val){
   FILE * the_file = fopen(filename, "w+");
   if(the_file == NULL){
@@ -152,9 +160,9 @@ void attach(libusb_device_handle* handle, int interface_number) {
   }
 }
 
-int setdelay(libusb_device_handle* handle, unsigned int delay)
-{
-}
+/* int setdelay(libusb_device_handle* handle, unsigned int delay) */
+/* { */
+/* } */
 
 void claim_interface(libusb_device_handle * handle, int interface_number){
   int success = libusb_claim_interface(handle, interface_number);
@@ -260,126 +268,105 @@ void perform_action(int region, int red, int green, int blue) {
   /* fprintf(stderr, "FINISHED successfully\r\n"); */
 }
 
-void poweroff_lights(){
+void check_and_initialize_lights(){
+  if(!initialized){
+    r = get_red(), g = get_green(), b = get_blue();
+    perform_action(0xffffff, r, g, b);
+    initialized = true;
+  }
+}
+
+void power_off_lights(){
   perform_action(ALL_THE_THINGS, 0, 0, 0);
+}
+
+void power_on_lights(){
+  check_and_initialize_lights();
+  perform_action(ALL_THE_THINGS,r,g,b);
 }
 
 void power_red_lights(){
   perform_action(ALL_THE_THINGS, 255, 0, 0);
 }
 
-static uint r = 0;
-static uint g = 0;
-static uint b = 0;
-static bool initialized = false;
-
 void up_it_red(){
-  if(!initialized){
-    r = get_red(), g = get_green(), b = get_blue();
-    perform_action(0xffffff, 0, 0, 0);
-    initialized = true;
-  }
+  check_and_initialize_lights();
   r += 10;
   r &= 0xff;
   perform_action(0xffffff, r, g, b);
 #ifdef WRITEPATH
-  update_file("/home/dieraca/.config/slstatus/.r", r);
+  update_file(RED_PATH, r);
 #endif
 }
 
 void up_it_green(){
-  if(!initialized){
-    r = get_red(), g = get_green(), b = get_blue();
-    perform_action(0xffffff, 0, 0, 0);
-    initialized = true;
-  }
+  check_and_initialize_lights();
   g += 10;
   g &= 0xff;
   perform_action(0xffffff, r, g, b);
 #ifdef WRITEPATH
-  update_file("/home/dieraca/.config/slstatus/.g", g);
+  update_file(GREEN_PATH, g);
 #endif
 }
 
 void up_it_blue(){
-  if(!initialized){
-    r = get_red(), g = get_green(), b = get_blue();
-    perform_action(0xffffff, 0, 0, 0);
-    initialized = true;
-  }
+  check_and_initialize_lights();
   b += 10;
   b &= 0xff;
   perform_action(0xffffff, r, g, b);
 #ifdef WRITEPATH
-  update_file("/home/dieraca/.config/slstatus/.b", b);
+  update_file(BLUE_PATH, b);
 #endif
 }
 
-
 void down_it_red(){
-  if(!initialized){
-    r = get_red(), g = get_green(), b = get_blue();
-    perform_action(0xffffff, 0, 0, 0);
-    initialized = true;
-  }
+  check_and_initialize_lights();
   r -= 10;
   r &= 0xff;
   perform_action(0xffffff, r, g, b);
 #ifdef WRITEPATH
-  update_file("/home/dieraca/.config/slstatus/.r", r);
+  update_file(RED_PATH, r);
 #endif
 }
 
 void down_it_green(){
-  if(!initialized){
-    r = get_red(), g = get_green(), b = get_blue();
-    perform_action(0xffffff, 0, 0, 0);
-    initialized = true;
-  }
+  check_and_initialize_lights();
   g -= 10;
   g &= 0xff;
   perform_action(0xffffff, r, g, b);
 #ifdef WRITEPATH
-  update_file("/home/dieraca/.config/slstatus/.g", g);
+  update_file(GREEN_PATH, g);
 #endif
 }
 
 void down_it_blue(){
-  if(!initialized){
-    r = get_red(), g = get_green(), b = get_blue();
-    perform_action(0xffffff, 0, 0, 0);
-    initialized = true;
-  }
+  check_and_initialize_lights();
   b -= 10;
   b &= 0xff;
   perform_action(0xffffff, r, g, b);
 #ifdef WRITEPATH
-  update_file("/home/dieraca/.config/slstatus/.b", b);
+  update_file(BLUE_PATH, b);
 #endif
 }
 
-
 int get_red(){
-  return read_file("/home/dieraca/.config/slstatus/.r");
+  return read_file(RED_PATH);
 }
 
 int get_blue(){
-  return read_file("/home/dieraca/.config/slstatus/.b");
+  return read_file(BLUE_PATH);
 }
 
 int get_green(){
-  return read_file("/home/dieraca/.config/slstatus/.g");
+  return read_file(RED_PATH);
 }
 
 void low_power_mode(bool turnOn){
-  if(!initialized){
-    r = get_red(), g = get_green(), b = get_blue();
-    perform_action(0xffffff, 0, 0, 0);
-    initialized = true;
-  }
+  check_and_initialize_lights();
   if(turnOn){
-    if(read_file("/home/dieraca/.config/slstatus/.low_bat") == 1)
+    if(read_file("/home/dieraca/.config/slstatus/.low_bat") == 1){
       return;
+    }
     libusb_context*		context;
     libusb_device_handle*	handle;
     //enable
@@ -394,6 +381,7 @@ void low_power_mode(bool turnOn){
                               (unsigned char)RESET_ALL_LIGHTS_ON};
 
     single_write_to_fx(handle, data1, sizeof(data1));
+    usleep(9001);
 
     char data[] = { START_BYTE, COMMAND_SET_BLINK_COLOR,
                     0x01,
