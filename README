@@ -1,3 +1,5 @@
+# How to configure this library:
+
 This is a working proof of concept C LED library for the alienware 15 r3 to control its LEDs through the libusb C API. It heavily draws upon code found at https://github.com/erlkonig/alienfx.
 
 To compile the static c library, run: 
@@ -5,3 +7,30 @@ To compile the static c library, run:
 sudo make -B && sudo make install
 
 This will allow you include an "alienfx.h" header in your code to access the library. Also be sure to complile with the lalienfx cflag and to include the libusb-1.0 library.
+
+See my dwm and slstatus forks for integration of this library with window manager and status bar, respecitvely.
+
+# What has been done so far #
+* light toggle
+* incrementing universally rgb
+* storing color status in text files for persistent colors 
+* a low power (flashing red lights) mode
+* control over the blinking frequency 
+
+
+# Things that still need to be done #
+* Write status:sector forall sectors to a tmp directory (say /tmp/alienwareColors).
+* Name this project
+* Have a consolidate and a split function
+    * we have a master (say alien button)
+    * we can SPLIT off that master button into an array of incrementing colors
+    * when we want the same thing again, we can CONSOLIDATE everything back into the same *master* color
+* control the blinker 
+* unrelated but good to do
+    * add in more detailed controls to slstatus if you can (or maybe start thinking about writing a conky plugin)
+    * sort of unrelated but add in way more controls to dwm
+* add in a mode that will gradually universally increment the colors (maybe randomly choose from rgb every 10 seconds and increment by 1)
+* rename things to make this entire project more professional
+* Change increments to multiples of 8 
+
+

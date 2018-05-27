@@ -38,4 +38,8 @@ void make_blinky();
 
 void make_solid();
 
+void up_blinky_speed();
+
+void down_blinky_speed();
+
 #endif

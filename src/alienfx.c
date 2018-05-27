@@ -89,6 +89,9 @@
 #define ALL_THE_THINGS 0xffff
 
 // NOTE must be enabled in bios in order for this to be effective
+// TODO implement changing the default thing to change
+// TODO add text field for this
+// TODO the shortcut can be LIGHTKEY + f1-12 since there are 12 lights right
 #define TRACKPAD 0x80
 
 
@@ -96,13 +99,19 @@
 #define GREEN_PATH "/home/dieraca/.config/slstatus/.g"
 #define BLUE_PATH "/home/dieraca/.config/slstatus/.b"
 #define TYPE_PATH "/home/dieraca/.config/slstatus/.type"
+#define BLINKY_PATH "/home/dieraca/.config/slstatus/.blink_speed"
 #define LOW_POWER_PATH "/home/dieraca/.config/slstatus/.low_bat"
 
+#define BLINKY_STEP_SIZE 16 // amount to increment blinky speed by
+
 // shouldn't need values but better safe than sorry...
+// TODO fix this to READ in rgb every time because we have mutliple instances running right (slstatus, dwm, etc) 
+// TODO or have different modes (SLSTATUS MODE), (DWM MODE), b/c slstatus never really writes rgb ever, and dwm only writes.
 static uint r = 0;
 static uint g = 0;
 static uint b = 0;
 static uint t = COMMAND_SET_COLOR;
+static uint16_t blinky_speed = 0;
 static bool initialized = false;
 
 
@@ -115,7 +124,6 @@ void update_file(const char * filename, int val){
   fprintf(the_file, "%x", val);
   fclose(the_file);
 }
-
 
 int read_file(const char * filename){
   FILE * the_file = fopen(filename, "r");
@@ -133,12 +141,16 @@ int get_type(){
   return read_file(TYPE_PATH);
 }
 
+int get_blinky_speed(){
+  return read_file(BLINKY_PATH);
+}
+
 void initialize(libusb_context** context, libusb_device_handle** handle, unsigned short idVendor, unsigned short idProduct) {
   if (0 == libusb_init(context)) {
     // TODO add in if statement if we want debugging output
     libusb_set_debug(*context,3);
     if ((*handle = libusb_open_device_with_vid_pid(*context,idVendor,idProduct))) {
-        fprintf(stderr,"device opened\r\n");
+      fprintf(stderr,"device opened\r\n");
     } else {
       fprintf(stderr, "failed to open usb device; check idvendor and idproduct\r\n");
       exit(0);
@@ -155,8 +167,8 @@ void detach(libusb_device_handle* handle, int interface_number) {
 		int success = libusb_detach_kernel_driver(handle, interface_number);
     if (success < 0){
       fprintf(stderr, "kernel driver active, and failed to detached with error %d\r\n", success);
-        exit(0);
-      }
+      exit(0);
+    }
   }
 }
 
@@ -278,7 +290,7 @@ void perform_action(int region, int red, int green, int blue, int type) {
 
 void check_and_initialize_lights(){
   if(!initialized){
-    r = get_red(), g = get_green(), b = get_blue(), t = get_type();
+    r = get_red(), g = get_green(), b = get_blue(), t = get_type(), blinky_speed = get_blinky_speed();
     perform_action(0xffffff, r, g, b, t);
     initialized = true;
   }
@@ -366,14 +378,14 @@ int get_blue(){
 }
 
 int get_green(){
-  return read_file(RED_PATH);
+  return read_file(GREEN_PATH);
 }
 
 
 void low_power_mode(bool turnOn){
   check_and_initialize_lights();
   if(turnOn){
-    if(read_file("/home/dieraca/.config/slstatus/.low_bat") == 1){
+    if(read_file(LOW_POWER_PATH) == 1){
       return;
     }
     libusb_context*		context;
@@ -409,12 +421,12 @@ void low_power_mode(bool turnOn){
     release_interface(handle, INTERFACE_NUMBER);
     attach(handle, INTERFACE_NUMBER);
     close_and_exit(handle, context);
-    update_file("/home/dieraca/.config/slstatus/.low_bat", 1);
+    update_file(LOW_POWER_PATH, 1);
   } else{
     // disable
-    if(read_file("/home/dieraca/.config/slstatus/.low_bat") != 0){
+    if(read_file(LOW_POWER_PATH) != 0){
       perform_action(0xffffff, r, g, b, t);
-      update_file("/home/dieraca/.config/slstatus/.low_bat", 0);
+      update_file(LOW_POWER_PATH, 0);
     }
   }
 }
@@ -436,3 +448,63 @@ void make_solid(){
   update_file(TYPE_PATH, t);
 #endif
 }
+
+// TODO figure this out
+void set_blinky_speed(bool increase_speed){
+
+  blinky_speed = read_file(BLINKY_PATH);
+
+  blinky_speed +=  BLINKY_STEP_SIZE * ((increase_speed) ? 1 : -1);
+
+  printf("SPEED: %d", blinky_speed);
+
+  if(blinky_speed > MAX_SPEED)
+    blinky_speed = MAX_SPEED;
+  if(blinky_speed < MIN_SPEED)
+    blinky_speed = MIN_SPEED;
+
+  printf("SPEED2: %d", blinky_speed);
+
+
+  libusb_context*		context;
+  libusb_device_handle*	handle;
+  //enable
+  initialize(&context, &handle, ALIENWARE_VENDORID, ALIENWARE_PRODUCTID);
+  // detach any current driver
+  detach(handle, INTERFACE_NUMBER);
+  // claim the interface
+  claim_interface(handle, INTERFACE_NUMBER);
+
+  /* complete_write_to_fx(handle, BLOCK_CHARGING, KB_FAR_LEFT, 0, 0, 0, INTERFACE_NUMBER); */
+  unsigned char data1[] = { START_BYTE, COMMAND_RESET,
+                            (unsigned char)RESET_ALL_LIGHTS_ON};
+
+  single_write_to_fx(handle, data1, sizeof(data1));
+  usleep(9001);
+
+  // TODO assertion about top and bottom halves being mutliple of 100
+  char top_half = (blinky_speed >> 8) & 0xff;
+  char bottom_half = blinky_speed & 0xff;
+
+  char data[] = { START_BYTE, COMMAND_SET_SPEED, top_half, bottom_half};
+
+  single_write_to_fx(handle, data, sizeof(data));
+  usleep(9001);
+  char data2[] = { START_BYTE, COMMAND_LOOP_BLOCK_END };
+  single_write_to_fx(handle, data2, sizeof(data2));
+  char data3[] = { START_BYTE, COMMAND_TRANSMIT_EXECUTE};
+  single_write_to_fx(handle, data3, sizeof(data3));
+  release_interface(handle, INTERFACE_NUMBER);
+  attach(handle, INTERFACE_NUMBER);
+  close_and_exit(handle, context);
+  update_file(BLINKY_PATH, blinky_speed);
+}
+
+void up_blinky_speed(){
+  set_blinky_speed(true);
+}
+
+void down_blinky_speed(){
+  set_blinky_speed(false);
+}
+
