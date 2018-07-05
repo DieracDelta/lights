@@ -1,0 +1,34 @@
+#!/sbin/openrc-run
+ALIENFXCMD=/usr/sbin/alienfxd
+# command_args="${foo_args} --bar"
+PIDFILE_DIR=/var/run/alienfx
+PIDFILE=${PIDFILE_DIR}/alienfx.pid
+name="AlienFx Daemon"
+
+description="Daemon to control alienfx lights explicitly on alienware 15 inch R3"
+
+depend() {
+    need localmount
+    after bootmisc dbus
+}
+
+start() {
+    ebegin "starting alienfx daemon"
+    # this service backgrounds itself and creates the pid
+    start-stop-daemon \
+        --pidfile "${PIDFILE}" \
+        --start --exec "${ALIENFXCMD}"
+    # return exit status of last command
+    eend $?
+
+}
+
+stop(){
+    ebegin "stopping AlienFX daemon"
+    einfo "${PIDFILE}" 
+    einfo "${ALIENFXCMD}" 
+    start-stop-daemon \
+        --pidfile "${PIDFILE}" \
+        --stop --exec "${ALIENFXCMD}"\
+    eend $?
+}

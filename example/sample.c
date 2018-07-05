@@ -2,6 +2,8 @@
 #include <stdio.h>
 
 int main(){
-	up_blinky_speed();
-	make_blinky();
+  /* for(int i = 0; i < 30; i++){ */
+  /*   down_blinky_speed(); */
+  /* } */
+	/* make_solid(); */
 }

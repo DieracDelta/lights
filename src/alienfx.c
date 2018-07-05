@@ -456,14 +456,14 @@ void set_blinky_speed(bool increase_speed){
 
   blinky_speed +=  BLINKY_STEP_SIZE * ((increase_speed) ? 1 : -1);
 
-  printf("SPEED: %d", blinky_speed);
+  printf("SPEED: %d\r\n", blinky_speed);
 
   if(blinky_speed > MAX_SPEED)
     blinky_speed = MAX_SPEED;
   if(blinky_speed < MIN_SPEED)
     blinky_speed = MIN_SPEED;
 
-  printf("SPEED2: %d", blinky_speed);
+  printf("SPEED2: %d\r\n", blinky_speed);
 
 
   libusb_context*		context;
