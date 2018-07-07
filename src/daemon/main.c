@@ -8,8 +8,15 @@
 #include <string.h>
 #include <fcntl.h>
 #include <syslog.h>
+#include <sys/socket.h>
+#include <stdarg.h>
+
+#define DEBUG 1
 
 
+
+
+const char SERVERSOCKETPATH[] ="/tmp/alienfxsocket";
 const char PIDPATH[] = "/var/run/alienfx";
 const char PIDFILEPATH[] = "/var/run/alienfx/alienfx.pid";
 const char STATEFILEPATH[] = "~/.alienfx.yaml";
@@ -17,11 +24,59 @@ const char STATEFILEPATH[] = "~/.alienfx.yaml";
 static int pid_fd;
 static int on;
 
-void plog(const char * msg);
-void plog(const char * msg){
+// TODO move methods to header and actually make a header file like a good boyo
+void plog(const char * fmt);
+void plog(const char * fmt){
+  // this SHOULD have worked ...
+  /* static int counter = 0; */
+  /* const char initial_str[] = "ALIENFX: "; */
+  /* const char end_str[] = "\n"; */
+
+
+
+  /* int c_len = snprintf( NULL, 0, "%d", counter++); */
+  /* // + 1 for null terminator */
+  /* char * c_str = (char*)malloc(++c_len); */
+  /* snprintf(c_str, c_len + 1, "%d", counter); */
+
+  /* int new_fmt_size = strlen(initial_str) + strlen(c_str) + strlen(fmt) + strlen(end_str); */
+  /* char * new_fmt = (char*) malloc(new_fmt_size + 1); */
+  /* char * cur_ptr = new_fmt; */
+
+  /* // TODO clean this up */
+  /* strncpy(cur_ptr, initial_str, strlen(initial_str)); */
+  /* cur_ptr += strlen(initial_str); */
+  /* strncpy(cur_ptr, c_str, strlen(c_str)); */
+  /* cur_ptr += strlen(c_str); */
+  /* strncpy(cur_ptr, fmt, strlen(fmt)); */
+  /* cur_ptr += strlen(fmt); */
+  /* strncpy(cur_ptr, end_str, strlen(end_str)); */
+  /* cur_ptr += strlen(end_str) + 1; */
+
+
+  /* va_list fmt_args; */
+  /* va_start(fmt_args, fmt); */
+  /* // TODO add more in-depth logging */
+  /* puts("what the shitter1"); */
+  /* vsyslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), fmt, fmt_args); */
+  /* va_end(fmt_args); */
+  /* puts("what the shitter2"); */
+
+  /* free(new_fmt); */
+  /* free(c_str); */
+
+  /* va_list fmt_args; */
+  /* va_start(fmt_args, fmt); */
+  /* int bruh = LOG_MAKEPRI(LOG_DAEMON, LOG_INFO); */
+  /* vsyslog(bruh, fmt, fmt_args); */
+  /* va_end(fmt_args); */
+  // this SHOULD have worked ...
+
   static int counter = 0;
-  // TODO add more in-depth logging
-  syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "ALIENFX %d: %s \n", counter++, msg);
+  syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "ALIENFX %d: %s \n", counter++, fmt);
+  #if DEBUG
+  printf("ALIENFX %d: %s \n", counter -1, fmt);
+  #endif
 }
 
 void sig_handler(const int signal){
@@ -36,50 +91,41 @@ void sig_handler(const int signal){
 
  end:
   plog("failed to close pid file");
+  return;
  success:
   plog("successfully closed pid file");
 
   plog("EXITING");
-  return;
 }
 
 // inspired by a bazillion sources, all of which just said "fork twice my frand"
+// GET DAT BAGGROUND
 
 void main(){
 
   // BOOKKEEPING
-  printf("made it 9\n");
   pid_t pid = fork();
-  printf("made it 10\n");
 
   // exit parent
   if(pid < 0) exit(EXIT_FAILURE);
-  printf("made it 8\n");
   // TODO exit or _exit?
   if(pid > 0) exit(EXIT_SUCCESS);
-  printf("made it 7\n");
 
   // be your own session
   if(setsid() < 0) exit(EXIT_FAILURE);
-  printf("made it 6\n");
 
   int second_pid = fork();
-  printf("made it 5\n");
 
   // exit child, leaving grandchild
   if(second_pid < 0) exit(EXIT_FAILURE);
-  printf("made it 4\n");
   if(second_pid > 0) exit(EXIT_SUCCESS);
-  printf("made it 3\n");
 
 
   // switch cwd to root to allow for unmounting 
   if(chdir("/") < 0) exit(EXIT_FAILURE);
-  printf("made it 2\n");
 
   // child has full access to files
   umask(0);
-  printf("made it 1\n");
 
   // alternative to remove stdin stdout stderr fds
   /* close(STDIN_FILENO); */
@@ -87,33 +133,27 @@ void main(){
   /* close(STDERR_FILENO); */
 
   // close fds
-  /* for(int fd = sysconf(_SC_OPEN_MAX); fd > 0; fd--){ */
-  /*   close(fd); */
-  /* } */
+  #if DEBUG
+  for(int fd = sysconf(_SC_OPEN_MAX); fd > 0; fd--){
+    close(fd);
+  }
+  #endif
 
   // write pid to PIDFILEPATH
   // initially st had a zero in it but that's equivalent to null soo
-  printf("made it 14\r\n");
   struct stat st = {};
   if(stat(PIDPATH, &st) < 0) {
-    printf("made it 16\r\n");
     mkdir(PIDPATH, 0755);
   }
 
-  printf("made it 15\r\n");
   pid_fd = open(PIDFILEPATH, O_RDWR|O_CREAT, 0755);
-  printf("made it 16 %d\r\n", pid_fd);
   if(pid_fd < 0) exit(EXIT_FAILURE);
-  printf("made it 11\r\n");
 
   // F_TLOCK because we don't want blocking, we want error if the file is already locked
   if(lockf(pid_fd, F_TLOCK, 0) < 0) exit(EXIT_FAILURE);
-  printf("made it 12\r\n");
   char str[69];
   sprintf(str, "%d", getpid());
   if (write(pid_fd, str, strlen(str)) < 0) exit(EXIT_FAILURE);
-  printf("made it 13\r\n");
-
 
   // open up logs; we're not taking input
   // TODO we're not taking input right
@@ -126,16 +166,22 @@ void main(){
   signal(SIGTERM, sig_handler);
   signal(SIGQUIT, sig_handler);
 
-  // docs: https://www.gnu.org/software/libc/manual/html_node/openlog.html
-  // TODO docs say that I *do NOT* have to open daemon
   plog("ALIENFX has started successfully");
 
   on = 1;
 
-
   while(on){
-    plog("HII BITCH");
+    // local namespace,
+    plog("HI BITCH");
+    int socket_fd = socket(PF_LOCAL, SOCK_DGRAM, 0);
+    struct sockaddr_un ;
+    if(socket_fd < 0) {
+      exit(EXIT_FAILURE);
+      plog("failed to create socket");
+    }
+
+
+
     sleep(100);
   }
 }
-
