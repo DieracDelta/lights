@@ -15,6 +15,7 @@ $(STATIC): $(OBJECTS)
 	@echo "[Link (Static)]"
 	@ar rcs $@ $^
 
+#$@ is the name of the file being generated, and $< the first prerequisite (usually the source file), and $^ refers to all files being evaluated
 .c.o:
 	@echo [Compile] $<
 	@$(CC) -c $(CFLAGS) $< -o $@

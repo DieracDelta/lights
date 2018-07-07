@@ -10,6 +10,7 @@
 #include <syslog.h>
 #include <sys/socket.h>
 #include <stdarg.h>
+#include "alienfx.h"
 
 #define DEBUG 1
 
@@ -102,6 +103,8 @@ void sig_handler(const int signal){
 // GET DAT BAGGROUND
 
 void main(){
+  printf("HIHIHI\r\n");
+  fflush(stdout);
 
   // BOOKKEEPING
   pid_t pid = fork();

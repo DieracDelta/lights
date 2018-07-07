@@ -5,8 +5,7 @@
 #include <stdbool.h>
 #include <libusb-1.0/libusb.h>
 #include <string.h>
-
-// the underlying protocol was heavily borrowed by https://github.com/erlkonig/alienfx
+#include "consts.h"
 
 // to compile with debugging symbols:
 // gcc alienfx.c -ggdb -enable-debug-log `pkg-config --libs --cflags libusb-1.0`
@@ -15,97 +14,9 @@
 
 // compile with flag only if you want to write to path in order to integrate with slstatus
 // TODO should probably write to tmp instead of random directory
-#define WRITEPATH 1
-
-#define	ALIENWARE_VENDORID		0x187c
-#define	ALIENWARE_PRODUCTID	0x0530
-#define INTERFACE_NUMBER 0
-
-#define SEND_REQUEST_TYPE 0x21
-#define SEND_REQUEST      0x09
-#define SEND_VALUE        0x202
-#define SEND_INDEX        0x00
-#define SEND_DATA_SIZE    9
-
-#define	READ_REQUEST_TYPE	0xa1
-#define	READ_REQUEST		0x01
-#define	READ_VALUE		0x101
-#define	READ_INDEX		0x0
-#define	READ_DATA_SIZE		69
-
-#define	MIN_SPEED		100
-#define	MAX_SPEED		1000
-#define	STEP_SPEED		100
-
-
-// copied off alienfx project
-#define STATE_BUSY               	  0x11
-#define STATE_READY              	  0x10
-#define STATE_UNKNOWN_COMMAND    	  0x12
-
-#define SUPPORTED_COMMANDS       	    15
-#define COMMAND_END_STORAGE      	  0x00 // End storage block
-#define COMMAND_SET_MORPH_COLOR  	  0x01
-#define COMMAND_SET_BLINK_COLOR  	  0x02
-#define COMMAND_SET_COLOR        	  0x03
-#define COMMAND_LOOP_BLOCK_END   	  0x04
-#define COMMAND_TRANSMIT_EXECUTE 	  0x05 // End transmition and execute
-#define COMMAND_GET_STATUS       	  0x06 // Get device status
-#define COMMAND_RESET            	  0x07
-#define COMMAND_SAVE_NEXT        	  0x08 // Save next inst' in storage block
-#define COMMAND_SAVE             	  0x09 // Save storage data
-#define COMMAND_BATTERY_STATE    	  0x0F // Set batery state
-#define COMMAND_SET_SPEED        	  0x0E // Set display speed
-
-#define RESET_TOUCH_CONTROLS     	  0x01
-#define RESET_SLEEP_LIGHTS_ON    	  0x02
-#define RESET_ALL_LIGHTS_OFF     	  0x03
-#define RESET_ALL_LIGHTS_ON      	  0x04
-
-#define DATA_LENGTH                      9
-
-#define START_BYTE               	  0x02  // shows 0x00 for Area51; bug?
-#define FILL_BYTE                	  0x00
-
-#define BLOCK_LOAD_ON_BOOT       	  0x01
-#define BLOCK_STANDBY            	  0x02
-#define BLOCK_AC_POWER           	  0x05
-#define BLOCK_CHARGING           	  0x06
-#define BLOCK_BAT_POWER          	  0x08
-
-// for a fact work
-#define KB_FAR_RIGHT 0x1
-#define KB_MID_RIGHT 0x2
-#define KB_FAR_LEFT 0x8
-#define KB_MID_LEFT 0x4
-#define POWER_BUTTON 0x100
-#define ALIEN_HEAD 0x20
-#define ALIENWARE_NAME 0x40
-#define BOT_RIGHT_BURNER 0x800
-#define BOT_LEFT_BURNER 0x400
-#define TOP_RIGHT_BURNER 0x2000
-#define TOP_LEFT_BURNER 0x1000
-#define KB_SPECIAL 0x4000
-#define ALL_THE_THINGS 0xffff
-
-// NOTE must be enabled in bios in order for this to be effective
-// TODO implement changing the default thing to change
-// TODO add text field for this
-// TODO the shortcut can be LIGHTKEY + f1-12 since there are 12 lights right
-#define TRACKPAD 0x80
-
-
-#define RED_PATH "/home/dieraca/.config/slstatus/.r"
-#define GREEN_PATH "/home/dieraca/.config/slstatus/.g"
-#define BLUE_PATH "/home/dieraca/.config/slstatus/.b"
-#define TYPE_PATH "/home/dieraca/.config/slstatus/.type"
-#define BLINKY_PATH "/home/dieraca/.config/slstatus/.blink_speed"
-#define LOW_POWER_PATH "/home/dieraca/.config/slstatus/.low_bat"
-
-#define BLINKY_STEP_SIZE 16 // amount to increment blinky speed by
 
 // shouldn't need values but better safe than sorry...
-// TODO fix this to READ in rgb every time because we have mutliple instances running right (slstatus, dwm, etc) 
+// TODO fix this to READ in rgb every time because we have mutliple instances running right (slstatus, dwm, etc)
 // TODO or have different modes (SLSTATUS MODE), (DWM MODE), b/c slstatus never really writes rgb ever, and dwm only writes.
 static uint r = 0;
 static uint g = 0;
