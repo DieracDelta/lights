@@ -10,69 +10,39 @@
 #include <syslog.h>
 #include <sys/socket.h>
 #include <stdarg.h>
+#include <sys/un.h>
+#include "protocol.h"
 #include "alienfx.h"
 
 #define DEBUG 1
+/* #define PACKET_SIZE 1024 */
+#define NUM_OPS 5
 
 
 
-
-const char SERVERSOCKETPATH[] ="/tmp/alienfxsocket";
+const char SERVERSOCKETPATH[] ="/tmp/alienfxsocket.sock";
 const char PIDPATH[] = "/var/run/alienfx";
 const char PIDFILEPATH[] = "/var/run/alienfx/alienfx.pid";
-const char STATEFILEPATH[] = "~/.alienfx.yaml";
+const char STATEPATH[] = "/var/lib/alienfx/";
+/* const char STATEFILEPATH[] = "~/.alienfx.json"; */
 
 static int pid_fd;
 static int on;
 
+
+
+// takes args and fills out response/performs actions
+int (*response_handlers[2])(uint8_t[6], struct alienfx_response *) = {
+  get_handler,
+  set_colors_handler,
+};
+//increment_handler,
+//decrement_handler,
+//suspend_handler,
+
 // TODO move methods to header and actually make a header file like a good boyo
 void plog(const char * fmt);
 void plog(const char * fmt){
-  // this SHOULD have worked ...
-  /* static int counter = 0; */
-  /* const char initial_str[] = "ALIENFX: "; */
-  /* const char end_str[] = "\n"; */
-
-
-
-  /* int c_len = snprintf( NULL, 0, "%d", counter++); */
-  /* // + 1 for null terminator */
-  /* char * c_str = (char*)malloc(++c_len); */
-  /* snprintf(c_str, c_len + 1, "%d", counter); */
-
-  /* int new_fmt_size = strlen(initial_str) + strlen(c_str) + strlen(fmt) + strlen(end_str); */
-  /* char * new_fmt = (char*) malloc(new_fmt_size + 1); */
-  /* char * cur_ptr = new_fmt; */
-
-  /* // TODO clean this up */
-  /* strncpy(cur_ptr, initial_str, strlen(initial_str)); */
-  /* cur_ptr += strlen(initial_str); */
-  /* strncpy(cur_ptr, c_str, strlen(c_str)); */
-  /* cur_ptr += strlen(c_str); */
-  /* strncpy(cur_ptr, fmt, strlen(fmt)); */
-  /* cur_ptr += strlen(fmt); */
-  /* strncpy(cur_ptr, end_str, strlen(end_str)); */
-  /* cur_ptr += strlen(end_str) + 1; */
-
-
-  /* va_list fmt_args; */
-  /* va_start(fmt_args, fmt); */
-  /* // TODO add more in-depth logging */
-  /* puts("what the shitter1"); */
-  /* vsyslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), fmt, fmt_args); */
-  /* va_end(fmt_args); */
-  /* puts("what the shitter2"); */
-
-  /* free(new_fmt); */
-  /* free(c_str); */
-
-  /* va_list fmt_args; */
-  /* va_start(fmt_args, fmt); */
-  /* int bruh = LOG_MAKEPRI(LOG_DAEMON, LOG_INFO); */
-  /* vsyslog(bruh, fmt, fmt_args); */
-  /* va_end(fmt_args); */
-  // this SHOULD have worked ...
-
   static int counter = 0;
   syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "ALIENFX %d: %s \n", counter++, fmt);
   #if DEBUG
@@ -102,8 +72,8 @@ void sig_handler(const int signal){
 // inspired by a bazillion sources, all of which just said "fork twice my frand"
 // GET DAT BAGGROUND
 
-void main(){
-  printf("HIHIHI\r\n");
+int main(){
+  printf("MOTHERFUCKER\r\n");
   fflush(stdout);
 
   // BOOKKEEPING
@@ -171,20 +141,61 @@ void main(){
 
   plog("ALIENFX has started successfully");
 
+  // put together socket
+
+  // TODO better logging
+  remove(SERVERSOCKETPATH);
+
+
+  // put together server socket
+  struct sockaddr_un socket_addr;
+  memset(&socket_addr, 0, sizeof(socket_addr));
+  socket_addr.sun_family = AF_LOCAL;
+  strncpy(socket_addr.sun_path, SERVERSOCKETPATH, sizeof(socket_addr.sun_path));
+  socket_addr.sun_path[sizeof(socket_addr.sun_path) - 1] = '\0';
+  socklen_t len_socket_addr = SUN_LEN(&socket_addr);
+
+  int socket_fd = socket(PF_LOCAL, SOCK_DGRAM, 0);
+  if(socket_fd < 0) {
+    exit(EXIT_FAILURE);
+    // TODO log it
+    printf("failed to create socket\n");
+  }
+
+  int success = bind(socket_fd, (struct sockaddr *)&socket_addr, len_socket_addr);
+  if(success < 0){
+    // TODO log it
+    printf("failed to bind to socket with code %d", success);
+    exit(EXIT_FAILURE);
+  }
+
+  // define garbage pointer in case you need to know where stuff came from
+  struct sockaddr_un from_addr;
+  socklen_t from_len = SUN_LEN(&from_addr);
+
+  struct alienfx_msg * packet = malloc(sizeof(struct alienfx_msg));
+  struct alienfx_response * resp = malloc(sizeof(struct alienfx_response));
+
   on = 1;
 
   while(on){
-    // local namespace,
-    plog("HI BITCH");
-    int socket_fd = socket(PF_LOCAL, SOCK_DGRAM, 0);
-    struct sockaddr_un ;
-    if(socket_fd < 0) {
-      exit(EXIT_FAILURE);
-      plog("failed to create socket");
+    if(recvfrom(socket_fd, packet, sizeof(struct alienfx_msg), 0, (struct sockaddr *)&from_addr, &from_len) != sizeof(struct alienfx_msg)){
+      // TODO log it
+      printf("failed to receive message or message did not match protocol length");
     }
-
-
-
-    sleep(100);
+    // TODO else send error back
+    if(packet->OP < NUM_OPS){
+      int success = response_handlers[packet->OP](packet->args, resp);
+      if(success > 0){
+        // TODO send back response
+      }
+    } else{
+      printf("Packet op did not match expected format");
+    }
   }
+
+  shutdown(socket_fd, 0);
+  remove(SERVERSOCKETPATH);
+  free(packet);
+  free(resp);
 }

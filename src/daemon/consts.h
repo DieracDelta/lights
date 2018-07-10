@@ -47,9 +47,9 @@
 #define RESET_ALL_LIGHTS_OFF     	  0x03
 #define RESET_ALL_LIGHTS_ON      	  0x04
 
-#define DATA_LENGTH                      9
+#define DATA_LENGTH                 9
 
-#define START_BYTE               	  0x02  // shows 0x00 for Area51; bug?
+#define START_BYTE               	  0x02
 #define FILL_BYTE                	  0x00
 
 #define BLOCK_LOAD_ON_BOOT       	  0x01
@@ -58,7 +58,8 @@
 #define BLOCK_CHARGING           	  0x06
 #define BLOCK_BAT_POWER          	  0x08
 
-// for a fact work
+// for a fact work in alienware 15 R3
+// note that all values <= 2 bytes
 #define KB_FAR_RIGHT 0x1
 #define KB_MID_RIGHT 0x2
 #define KB_FAR_LEFT 0x8
@@ -79,6 +80,10 @@
 // TODO the shortcut can be LIGHTKEY + f1-12 since there are 12 lights right
 #define TRACKPAD 0x80
 
+
+#define COLOR_SET 0x1
+#define COLOR_INC 0x2
+#define COLOR_DEC 0x4
 
 #define RED_PATH "/home/dieraca/.config/slstatus/.r"
 #define GREEN_PATH "/home/dieraca/.config/slstatus/.g"
