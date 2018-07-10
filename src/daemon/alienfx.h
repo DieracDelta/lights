@@ -25,10 +25,10 @@ int get_handler(uint8_t * args, struct alienfx_response * resp);
 
 int set_colors_handler(uint8_t * args, struct alienfx_response * resp);
 
-int increment_handler(uint8_t * args, struct alienfx_response * resp);
+int increment_colors_handler(uint8_t * args, struct alienfx_response * resp);
 
-int decrement_handler(uint8_t * args, struct alienfx_response * resp);
+int decrement_colors_handler(uint8_t * args, struct alienfx_response * resp);
 
-int pause_handler(uint8_t arg1, uint8_t arg2, uint8_t arg3);
+int toggle_pause_handler(uint8_t * args, struct alienfx_response * resp);
 
 #endif

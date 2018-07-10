@@ -1,36 +1,45 @@
-# How to configure this library:
+# What is this? #
 
-This is a working proof of concept C LED library for the alienware 15 r3 to control its LEDs through the libusb C API. It heavily draws upon code found at https://github.com/erlkonig/alienfx.
+A work in progress openrc-style daemon and corresponding library for controlling the lights on the Alienware 15 R3 model laptop. (Fuck systemd. I won't be supporting them.)
 
-To compile the static c library, run: 
-
-sudo make -B && sudo make install
-
-This will allow you include an "alienfx.h" header in your code to access the library. Also be sure to complile with the lalienfx cflag and to include the libusb-1.0 library.
-
-See my dwm and slstatus forks for integration of this library with window manager and status bar, respecitvely.
-
-# What has been done so far #
-* light toggle
-* incrementing universally rgb
-* storing color status in text files for persistent colors 
-* a low power (flashing red lights) mode
-* control over the blinking frequency 
+You can also interface with the daemon in a higher level language such as python, as all it does is listen on a unix socket. However, I've opted to write my library in C, as most of *my* use cases involve incorporating the library into c programs.
 
 
-# Things that still need to be done #
-* Write status:sector forall sectors to a tmp directory (say /tmp/alienwareColors).
-* Name this project
-* Have a consolidate and a split function
-    * we have a master (say alien button)
-    * we can SPLIT off that master button into an array of incrementing colors
-    * when we want the same thing again, we can CONSOLIDATE everything back into the same *master* color
-* control the blinker 
-* unrelated but good to do
-    * add in more detailed controls to slstatus if you can (or maybe start thinking about writing a conky plugin)
-    * sort of unrelated but add in way more controls to dwm
-* add in a mode that will gradually universally increment the colors (maybe randomly choose from rgb every 10 seconds and increment by 1)
-* rename things to make this entire project more professional
-* Change increments to multiples of 8 
+# How to configure alienfxD: #
 
+## dependencies ##
+
+This daemon depends on lusb-1.0 (you do need to specify the version) and some sort of logging daemon implementation for the use of syslog (I'm using syslog-ng).
+
+## installation ##
+
+```bash
+git clone http://diracdelta.me:3000/jrestivo/alienware_15_r3_light_daemon.git lightdaemon
+cd lightdaemon/src/daemon
+sudo make clean && sudo make && sudo make install
+cd ../src/library
+sudo make clean && sudo make && sudo make install
+# now, enable the daemon enable as a service
+sudo rc-service alienfxd start
+sudo rc-service alienfxd enable
+```
+
+## usage ##
+
+Communication with the daemon is essentially done over a socket. My implementation of commands have been done over a datagram socket via a specific protocol that I'll eventually get around to writing actual docs for. But for now, if you're curious, the code is pretty well documented. Have a read :)
+
+Note that the daemon writes to 
+
+# Progress #
+  * [ ] Underlying protocol
+    * [WIP] flashing between two different colors
+    * [ ] other things you can do that I haven't figured out yet
+    * [x] get state
+    * [x] set rgb and freq
+    * [x] toggle lights on/off
+  * [ ] library portion
+  * [x] daemon portion
+  * [x] datagram socket communication + set a protocol between client and daemon
+  * [ ] saving + persistent state between boots stored as json on a per-boot basis
+  * [WIP] clean up code and makefiles
 

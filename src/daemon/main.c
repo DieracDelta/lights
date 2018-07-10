@@ -32,9 +32,12 @@ static int on;
 
 
 // takes args and fills out response/performs actions
-int (*response_handlers[2])(uint8_t[6], struct alienfx_response *) = {
+int (*response_handlers[6])(uint8_t[6], struct alienfx_response *) = {
   get_handler,
   set_colors_handler,
+  increment_colors_handler,
+  decrement_colors_handler,
+  toggle_pause_handler,
 };
 //increment_handler,
 //decrement_handler,

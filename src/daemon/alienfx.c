@@ -309,6 +309,7 @@ int decrement_colors_handler(uint8_t *args, struct alienfx_response *resp){
   return colors_handler(args, resp, COLOR_DEC);
 }
 
+// args don't matter
 int toggle_pause_handler(uint8_t *args, struct alienfx_response *resp){
   if(paused){
     perform_action(ALL_THE_THINGS, 0, 0, 0, t, BLOCK_CHARGING);
@@ -318,6 +319,7 @@ int toggle_pause_handler(uint8_t *args, struct alienfx_response *resp){
   paused = !paused;
   return 0;
 }
+
 
 
 

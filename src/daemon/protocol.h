@@ -4,11 +4,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define NUM_HANDLERS 5
+
 #define GET 0x0
-#define SET 0x1
-#define INCREMENT 0x2
-#define DECREMENT 0x3
-#define SUSPEND 0x4
+#define SET_COLOR 0x1
+#define INCREMENT_COLOR 0x2
+#define DECREMENT_COLOR 0x3
+#define PAUSE 0x4
+
 
 #define RED_FLAG 0x0
 #define GREEN_FLAG 0x2
