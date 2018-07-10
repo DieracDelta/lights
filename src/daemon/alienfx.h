@@ -31,4 +31,10 @@ int decrement_colors_handler(uint8_t * args, struct alienfx_response * resp);
 
 int toggle_pause_handler(uint8_t * args, struct alienfx_response * resp);
 
+int toggle_flash_handler(uint8_t *args, struct alienfx_response *resp);
+
+int decrement_freq_handler(uint8_t *args, struct alienfx_response *resp);
+int increment_freq_handler(uint8_t *args, struct alienfx_response *resp);
+int set_freq_handler(uint8_t *args, struct alienfx_response *resp);
+
 #endif

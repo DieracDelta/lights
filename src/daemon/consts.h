@@ -81,9 +81,9 @@
 #define TRACKPAD 0x80
 
 
-#define COLOR_SET 0x1
-#define COLOR_INC 0x2
-#define COLOR_DEC 0x4
+#define INTERNAL_SET 0x1
+#define INTERNAL_INC 0x2
+#define INTERNAL_DEC 0x4
 
 #define RED_PATH "/home/dieraca/.config/slstatus/.r"
 #define GREEN_PATH "/home/dieraca/.config/slstatus/.g"
