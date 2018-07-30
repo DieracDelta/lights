@@ -32,19 +32,21 @@ static int on;
 
 
 // takes args and fills out response/performs actions
-int (*response_handlers[6])(uint8_t[6], struct alienfx_response *) = {
+int (*response_handlers[11])(uint8_t, uint8_t*, struct alienfx_response *) = {
   get_handler,
   set_colors_handler,
   increment_colors_handler,
   decrement_colors_handler,
   toggle_pause_handler,
+  NULL,
+  NULL,
+  NULL,
+  set_profile_handler,
+  increment_colors_handler,
+  decrement_colors_handler,
 };
-//increment_handler,
-//decrement_handler,
-//suspend_handler,
 
 // TODO move methods to header and actually make a header file like a good boyo
-void plog(const char * fmt);
 void plog(const char * fmt){
   static int counter = 0;
   syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "ALIENFX %d: %s \n", counter++, fmt);
@@ -68,7 +70,6 @@ void sig_handler(const int signal){
   return;
  success:
   plog("successfully closed pid file");
-
   plog("EXITING");
 }
 
@@ -76,7 +77,6 @@ void sig_handler(const int signal){
 // GET DAT BAGGROUND
 
 int main(){
-  printf("MOTHERFUCKER\r\n");
   fflush(stdout);
 
   // BOOKKEEPING
@@ -149,6 +149,7 @@ int main(){
   // TODO better logging
   remove(SERVERSOCKETPATH);
 
+  plog("point 6");
 
   // put together server socket
   struct sockaddr_un socket_addr;
@@ -164,7 +165,9 @@ int main(){
     // TODO log it
     printf("failed to create socket\n");
   }
+  plog("point 5");
 
+  unlink(SERVERSOCKETPATH);
   int success = bind(socket_fd, (struct sockaddr *)&socket_addr, len_socket_addr);
   if(success < 0){
     // TODO log it
@@ -175,26 +178,41 @@ int main(){
   // define garbage pointer in case you need to know where stuff came from
   struct sockaddr_un from_addr;
   socklen_t from_len = SUN_LEN(&from_addr);
+  plog("point 4");
 
   struct alienfx_msg * packet = malloc(sizeof(struct alienfx_msg));
   struct alienfx_response * resp = malloc(sizeof(struct alienfx_response));
 
   on = 1;
+  plog("point 1");
+  init_profiles();
+  plog("point 2");
+  write_entire_profile(NULL);
+  plog("point 3");
 
   while(on){
+    plog("waiting to recieve something");
     if(recvfrom(socket_fd, packet, sizeof(struct alienfx_msg), 0, (struct sockaddr *)&from_addr, &from_len) != sizeof(struct alienfx_msg)){
       // TODO log it
       printf("failed to receive message or message did not match protocol length");
+      plog("failure man");
     }
+    plog("recieved something");
     // TODO else send error back
     if(packet->OP < NUM_OPS){
-      int success = response_handlers[packet->OP](packet->args, resp);
-      if(success > 0){
-        // TODO send back response
+      plog("im doing stuff");
+      int success = response_handlers[packet->OP](packet->profile_index, packet->args, resp);
+      if(success < 0){
+        plog("failure at responding to something");
       }
     } else{
       printf("Packet op did not match expected format");
     }
+    plog("bish");
+    memset(packet, 0, sizeof(struct alienfx_msg));
+    memset(resp, 0, sizeof(struct alienfx_response));
+    plog("finished@!");
+    break;
   }
 
   shutdown(socket_fd, 0);

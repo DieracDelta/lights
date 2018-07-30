@@ -5,36 +5,33 @@
 #include <stdint.h>
 #include "protocol.h"
 
-void power_off_lights();
+static struct alienfx_profile * profiles;
 
-void power_on_lights();
+void init_profiles();
 
-int get_type();
+void write_entire_profile(struct alienfx_profile * prof);
 
-void low_power_mode(bool isOn);
+int get_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp);
 
-void make_blinky();
+int set_colors_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp);
 
-void make_solid();
+int increment_colors_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp);
 
-void up_blinky_speed();
+int decrement_colors_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp);
 
-void down_blinky_speed();
+int toggle_pause_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp);
 
-int get_handler(uint8_t * args, struct alienfx_response * resp);
+int increment_profile_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp);
 
-int set_colors_handler(uint8_t * args, struct alienfx_response * resp);
+int decrement_profile_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp);
 
-int increment_colors_handler(uint8_t * args, struct alienfx_response * resp);
+int set_profile_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp);
 
-int decrement_colors_handler(uint8_t * args, struct alienfx_response * resp);
+/* int toggle_flash_handler(uint16_t region_flags, uint8_t *args, struct alienfx_response *resp); */
 
-int toggle_pause_handler(uint8_t * args, struct alienfx_response * resp);
+/* int decrement_freq_handler(uint16_t region_flags, uint8_t *args, struct alienfx_response *resp); */
+/* int increment_freq_handler(uint16_t region_flags, uint8_t *args, struct alienfx_response *resp); */
+/* int set_freq_handler(uint16_t region_flags, uint8_t *args, struct alienfx_response *resp); */
 
-int toggle_flash_handler(uint8_t *args, struct alienfx_response *resp);
-
-int decrement_freq_handler(uint8_t *args, struct alienfx_response *resp);
-int increment_freq_handler(uint8_t *args, struct alienfx_response *resp);
-int set_freq_handler(uint8_t *args, struct alienfx_response *resp);
 
 #endif

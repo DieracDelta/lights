@@ -1,9 +1,8 @@
 #include <alienfx.h>
 #include <stdio.h>
+#include <alienfx_protocol.h>
 
 int main(){
-  /* for(int i = 0; i < 30; i++){ */
-  /*   down_blinky_speed(); */
-  /* } */
-	/* make_solid(); */
+
+  decrement_colors(0, ALL_THE_THINGS, RED_FLAG, 50, 0, 0);
 }

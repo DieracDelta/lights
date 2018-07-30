@@ -1,6 +1,6 @@
 SHELL = /bin/sh
 CC = gcc
-CFLAGS += -MD -MP -Wall
+CFLAGS += -MD -MP -Wall -Wpedantic -Wextra
 DEPS = $(shell find . -name "*.d")
 SOURCES  := $(wildcard *.c)
 OBJ = alienfx.o protocol.o consts.o main.o
@@ -23,18 +23,20 @@ main: main.o alienfx.o
 	#@echo [Compile] $<
 	#@$(CC) -c $(CFLAGS) $< -o $@
 
-install: uninstall
+install: 
+	@cp main alienfxd
 	@echo [Install] $<
 	@cp -f lightdaemon /etc/init.d/lightdaemon
 	@chmod +755 /etc/init.d/lightdaemon
 	@cp -f alienfxd /usr/sbin/alienfxd
 
 uninstall:
-	@rm /etc/init.d/lightdaemon
 	@rm /usr/sbin/alienfxd
+	@rm /etc/init.d/lightdaemon
 
 clean:
 	@echo [clean] $<
+	@rm main
 	@rm *.o
 	@rm *.d
 

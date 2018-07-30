@@ -58,32 +58,21 @@
 #define BLOCK_CHARGING           	  0x06
 #define BLOCK_BAT_POWER          	  0x08
 
-// for a fact work in alienware 15 R3
-// note that all values <= 2 bytes
-#define KB_FAR_RIGHT 0x1
-#define KB_MID_RIGHT 0x2
-#define KB_FAR_LEFT 0x8
-#define KB_MID_LEFT 0x4
-#define POWER_BUTTON 0x100
-#define ALIEN_HEAD 0x20
-#define ALIENWARE_NAME 0x40
-#define BOT_RIGHT_BURNER 0x800
-#define BOT_LEFT_BURNER 0x400
-#define TOP_RIGHT_BURNER 0x2000
-#define TOP_LEFT_BURNER 0x1000
-#define KB_SPECIAL 0x4000
-#define ALL_THE_THINGS 0xffff
-
-// NOTE must be enabled in bios in order for this to be effective
-// TODO implement changing the default thing to change
-// TODO add text field for this
-// TODO the shortcut can be LIGHTKEY + f1-12 since there are 12 lights right
-#define TRACKPAD 0x80
+#define NUM_PROFILES 4
 
 
+// for specifying which internal handler
 #define INTERNAL_SET 0x1
 #define INTERNAL_INC 0x2
 #define INTERNAL_DEC 0x4
+
+#define INTERNAL_USE_R 0x1
+#define INTERNAL_USE_G 0x2
+#define INTERNAL_USE_B 0x4
+#define INTERNAL_USE_FREQ 0x8
+#define INTERNAL_USE_TYPE 0x10
+#define INTERNAL_USE_PAUSE 0x20
+#define INTERNAL_ALL_FLAGS 0xff
 
 #define RED_PATH "/home/dieraca/.config/slstatus/.r"
 #define GREEN_PATH "/home/dieraca/.config/slstatus/.g"

@@ -24,5 +24,6 @@ $(STATIC): $(OBJECTS)
 install: $(STATIC)
 	@install -m 0755 $< ${DESTDIR}${PREFIX}
 	cp alienfx.h /usr/include
+	cp alienfx_protocol.h /usr/include
 clean:
 	rm *.a *.o
