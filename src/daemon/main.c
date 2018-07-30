@@ -29,11 +29,16 @@ const char STATEPATH[] = "/var/lib/alienfx/";
 static int pid_fd;
 static int on;
 
+int stop_handler(uint8_t garbage, uint8_t * args){
+  on = 0;
+  return 0;
+}
+
 
 
 // takes args and fills out response/performs actions
 int (*response_handlers[11])(uint8_t, uint8_t*) = {
-  NULL,
+  stop_handler,
   set_colors_handler,
   increment_colors_handler,
   decrement_colors_handler,
@@ -56,8 +61,27 @@ void plog(const char * fmt){
 }
 
 void sig_handler(const int signal){
+
+  struct alienfx_msg * packet = malloc(sizeof(struct alienfx_msg));
+  packet->OP = TERMINATE_ALIENFX;
+  int client_fd = socket(PF_LOCAL, SOCK_DGRAM, 0);
+  if(client_fd < 0) {
+    // failed
+    return;
+  }
+
+  struct sockaddr_un server_addr;
+  server_addr.sun_family = AF_LOCAL;
+  strncpy(server_addr.sun_path, SERVERSOCKETPATH, sizeof(server_addr.sun_path));
+  server_addr.sun_path[sizeof(server_addr.sun_path) - 1] = '\0';
+  socklen_t len_server_addr = SUN_LEN(&server_addr);
+
+  sendto(client_fd, packet, sizeof(struct alienfx_msg), 0, (struct sockaddr *) &server_addr, len_server_addr);
+
+  shutdown(client_fd, 0);
+  free(packet);
+
   // TODO add more extensive support for signals
-  on = 0;
 
   // unlock and close pid
   if(lockf(pid_fd, F_ULOCK, 0) < 0) goto end;
@@ -208,7 +232,6 @@ int main(){
       printf("Packet op did not match expected format");
     }
     memset(packet, 0, sizeof(struct alienfx_msg));
-    break;
   }
 
   shutdown(socket_fd, 0);

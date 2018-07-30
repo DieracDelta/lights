@@ -7,7 +7,7 @@
 #define NUM_HANDLERS 5
 
 // OPS
-#define GET 0x0
+#define TERMINATE_ALIENFX 0x0
 #define SET_COLOR 0x1
 #define INCREMENT_COLOR 0x2
 #define DECREMENT_COLOR 0x3

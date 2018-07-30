@@ -377,13 +377,13 @@ int colors_handler(uint8_t profile_index, uint8_t * args, uint8_t color_flags){
 // arg[3] specifies by how much if red
 // arg[4] specifies by how much if green
 // arg[5] specifies by how much if blue
-int set_colors_handler(uint8_t profile_index, uint8_t *args, struct alienfx_response *resp){
+int set_colors_handler(uint8_t profile_index, uint8_t *args){
   return colors_handler(profile_index, args, INTERNAL_SET);
 }
-int increment_colors_handler(uint8_t profile_index, uint8_t *args, struct alienfx_response *resp){
+int increment_colors_handler(uint8_t profile_index, uint8_t *args){
   return colors_handler(profile_index, args, INTERNAL_INC);
 }
-int decrement_colors_handler(uint8_t profile_index, uint8_t *args, struct alienfx_response *resp){
+int decrement_colors_handler(uint8_t profile_index, uint8_t *args){
   syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "ALIENFX is doing the job bro\n");
   return colors_handler(profile_index, args, INTERNAL_DEC);
 }
