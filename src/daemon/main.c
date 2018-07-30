@@ -32,8 +32,8 @@ static int on;
 
 
 // takes args and fills out response/performs actions
-int (*response_handlers[11])(uint8_t, uint8_t*, struct alienfx_response *) = {
-  get_handler,
+int (*response_handlers[11])(uint8_t, uint8_t*) = {
+  NULL,
   set_colors_handler,
   increment_colors_handler,
   decrement_colors_handler,
@@ -176,12 +176,11 @@ int main(){
   }
 
   // define garbage pointer in case you need to know where stuff came from
-  struct sockaddr_un from_addr;
-  socklen_t from_len = SUN_LEN(&from_addr);
+  /* struct sockaddr_un from_addr; */
+  /* socklen_t from_len = SUN_LEN(&from_addr); */
   plog("point 4");
 
   struct alienfx_msg * packet = malloc(sizeof(struct alienfx_msg));
-  struct alienfx_response * resp = malloc(sizeof(struct alienfx_response));
 
   on = 1;
   plog("point 1");
@@ -192,31 +191,27 @@ int main(){
 
   while(on){
     plog("waiting to recieve something");
-    if(recvfrom(socket_fd, packet, sizeof(struct alienfx_msg), 0, (struct sockaddr *)&from_addr, &from_len) != sizeof(struct alienfx_msg)){
+    if(recvfrom(socket_fd, packet, sizeof(struct alienfx_msg), 0, NULL, NULL) != sizeof(struct alienfx_msg)){
       // TODO log it
-      printf("failed to receive message or message did not match protocol length");
-      plog("failure man");
+      plog("failed to receive message or message did not match protocol length");
     }
     plog("recieved something");
     // TODO else send error back
     if(packet->OP < NUM_OPS){
       plog("im doing stuff");
-      int success = response_handlers[packet->OP](packet->profile_index, packet->args, resp);
+      syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "FUCK shit man yeet %x \n", packet->OP);
+      int success = response_handlers[packet->OP](packet->profile_index, packet->args);
       if(success < 0){
         plog("failure at responding to something");
       }
     } else{
       printf("Packet op did not match expected format");
     }
-    plog("bish");
     memset(packet, 0, sizeof(struct alienfx_msg));
-    memset(resp, 0, sizeof(struct alienfx_response));
-    plog("finished@!");
     break;
   }
 
   shutdown(socket_fd, 0);
   remove(SERVERSOCKETPATH);
   free(packet);
-  free(resp);
 }

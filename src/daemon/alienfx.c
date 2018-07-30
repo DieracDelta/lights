@@ -66,8 +66,11 @@ int update_profile(uint8_t profile, uint16_t region_flags, uint8_t r, uint8_t g,
     // undefined
     int flag_val = get_flag(i);
     if(flag_val & region_flags){
+      syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "hit hidey ho\n");
       if(use_flags & INTERNAL_USE_R){
+        syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "hit hidey ho1\n");
         if(op_flags & INTERNAL_SET){
+          syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "hit hidey ho42\n");
           profiles[profile].regions[i].r = r;
         }
         else if (op_flags & INTERNAL_INC){
@@ -291,7 +294,6 @@ void color_write(uint region, int r, int g, int b){
 }
 
 void write_entire_profile(struct alienfx_profile * profile){
-  int counter = 0;
   struct alienfx_profile * prof = (profile == NULL) ? profiles + current_profile_index : profile;
 
   /* syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "ALIENFX! point 70 %p %p", profiles); */
@@ -300,6 +302,7 @@ void write_entire_profile(struct alienfx_profile * profile){
   for(struct region_state * cur_region = prof->regions; cur_region < prof->regions + NUM_REGIONS; cur_region++){
     if(!cur_region->paused){
       if(cur_region->type == COMMAND_SET_COLOR){
+        syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "setting red value as %x\n", cur_region->r);
         color_write(get_flag(cur_region - prof->regions), cur_region->r, cur_region->g, cur_region->b);
       }
       if(cur_region->type == COMMAND_SET_BLINK_COLOR){
@@ -342,37 +345,7 @@ bool is_valid_region(uint16_t region){
   return false;
 }
 
-// arg 0 and 1 specify region IF getting rbg or freq
-// arg 2 specifies what to get (rgb, freq, )
-// remainder of args are not relevant
-// TODO check args better
-int get_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response *resp){
-  uint16_t region = (args[0] << 8) | args[1];
-  struct region_state val = profiles[profile_index].regions[ffs(region) - 1];
-  switch(args[2]){
-  case RED_FLAG:
-    resp->r_val = val.r;
-    break;
-  case GREEN_FLAG:
-    resp->r_val = val.g;
-    break;
-  case BLUE_FLAG:
-    resp->r_val = val.b;
-    break;
-  case FREQ_FLAG:
-    resp->r_val = val.freq;
-    break;
-  case PROF_FLAG:
-    resp->r_val = current_profile_index;
-  default:
-    resp->error = true;
-    return -1;
-  }
-  resp->error = false;
-  return 0;
-}
-
-int colors_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp, uint8_t color_flags){
+int colors_handler(uint8_t profile_index, uint8_t * args, uint8_t color_flags){
   uint16_t region = (args[0] << 8) | args[1];
 
   syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "420\n");
@@ -382,11 +355,11 @@ int colors_handler(uint8_t profile_index, uint8_t * args, struct alienfx_respons
   }
   if(GREEN_FLAG & args[2]){
     syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "422\n");
-    update_profile(profile_index, region, 0, args[3], 0, 0, 0, 0, INTERNAL_USE_R, color_flags);
+    update_profile(profile_index, region, 0, args[4], 0, 0, 0, 0, INTERNAL_USE_G, color_flags);
   }
   if(BLUE_FLAG & args[2]){
     syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "423\n");
-    update_profile(profile_index, region, 0, 0, args[3], 0, 0, 0, INTERNAL_USE_R, color_flags);
+    update_profile(profile_index, region, 0, 0, args[5], 0, 0, 0, INTERNAL_USE_B, color_flags);
   }
   if(profile_index == current_profile_index){
     syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "424\n");
@@ -405,14 +378,14 @@ int colors_handler(uint8_t profile_index, uint8_t * args, struct alienfx_respons
 // arg[4] specifies by how much if green
 // arg[5] specifies by how much if blue
 int set_colors_handler(uint8_t profile_index, uint8_t *args, struct alienfx_response *resp){
-  return colors_handler(profile_index, args, resp, INTERNAL_SET);
+  return colors_handler(profile_index, args, INTERNAL_SET);
 }
 int increment_colors_handler(uint8_t profile_index, uint8_t *args, struct alienfx_response *resp){
-  return colors_handler(profile_index, args, resp, INTERNAL_INC);
+  return colors_handler(profile_index, args, INTERNAL_INC);
 }
 int decrement_colors_handler(uint8_t profile_index, uint8_t *args, struct alienfx_response *resp){
   syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "ALIENFX is doing the job bro\n");
-  return colors_handler(profile_index, args, resp, INTERNAL_DEC);
+  return colors_handler(profile_index, args, INTERNAL_DEC);
 }
 
 // arg 0 represents upper half of new freq
@@ -451,7 +424,7 @@ int decrement_colors_handler(uint8_t profile_index, uint8_t *args, struct alienf
 
 // arg[0] specifies upper half of region
 // arg[1] specifies lower half of region
-int toggle_pause_handler(uint8_t profile_index, uint8_t *args, struct alienfx_response *resp){
+int toggle_pause_handler(uint8_t profile_index, uint8_t *args){
   uint16_t region = (args[0] << 8) | args[1];
   for(int i = 0; i < NUM_REGIONS; i++){
     if(get_flag(i) & region)
@@ -526,19 +499,19 @@ int toggle_pause_handler(uint8_t profile_index, uint8_t *args, struct alienfx_re
 /* } */
 
 
-int increment_profile_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp){
+int increment_profile_handler(uint8_t profile_index, uint8_t * args){
   current_profile_index = (current_profile_index + 1) % NUM_PROFILES;
   write_entire_profile(profiles + current_profile_index);
   return 0;
 }
 
-int decrement_profile_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp){
+int decrement_profile_handler(uint8_t profile_index, uint8_t * args){
   current_profile_index = (current_profile_index - 1) % NUM_PROFILES;
   write_entire_profile(profiles + current_profile_index);
   return 0;
 }
 
-int set_profile_handler(uint8_t profile_index, uint8_t * args, struct alienfx_response * resp){
+int set_profile_handler(uint8_t profile_index, uint8_t * args){
   if(profile_index < NUM_PROFILES){
     current_profile_index = profile_index;
     write_entire_profile(profiles + current_profile_index);

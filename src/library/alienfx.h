@@ -4,7 +4,8 @@
 #include "alienfx_protocol.h"
 
 
-uint8_t get_info(uint8_t profile_index, uint16_t region_flag, uint8_t get_flag);
+// TODO reimplement to read from files
+/* uint8_t get_info(uint8_t profile_index, uint16_t region_flag, uint8_t get_flag); */
 
 void set_colors(uint8_t profile_index, uint16_t region, uint8_t rgb_flags, uint8_t red, uint8_t blue, uint8_t green);
 
@@ -14,12 +15,12 @@ void decrement_colors(uint8_t profile_index, uint16_t region, uint8_t rgb_flags,
 
 void toggle_pause(uint8_t profile_index, uint16_t region);
 
-int inc_profile();
+void inc_profile();
 
-int dec_profile();
+void dec_profile();
 
-int set_profile(uint8_t profile_index);
+void set_profile(uint8_t profile_index);
 
-uint8_t get_cur_profile_index();
+/* uint8_t get_cur_profile_index(); */
 
 #endif
