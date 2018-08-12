@@ -13,6 +13,12 @@ void increment_colors(uint8_t profile_index, uint16_t region, uint8_t rgb_flags,
 
 void decrement_colors(uint8_t profile_index, uint16_t region, uint8_t rgb_flags, uint8_t red, uint8_t blue, uint8_t green);
 
+void set_freq(uint8_t profile_index, uint16_t region, uint16_t freq);
+
+void increment_freq(uint8_t profile_index, uint16_t region, uint16_t freq);
+
+void decrement_freq(uint8_t profile_index, uint16_t region, uint16_t freq);
+
 void toggle_pause(uint8_t profile_index, uint16_t region);
 
 void inc_profile();

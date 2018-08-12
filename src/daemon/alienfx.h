@@ -26,11 +26,15 @@ int decrement_profile_handler(uint8_t profile_index, uint8_t * args);
 
 int set_profile_handler(uint8_t profile_index, uint8_t * args);
 
+// FIXME literally add this in...
 /* int toggle_flash_handler(uint16_t region_flags, uint8_t *args, struct alienfx_response *resp); */
 
-/* int decrement_freq_handler(uint16_t region_flags, uint8_t *args, struct alienfx_response *resp); */
-/* int increment_freq_handler(uint16_t region_flags, uint8_t *args, struct alienfx_response *resp); */
-/* int set_freq_handler(uint16_t region_flags, uint8_t *args, struct alienfx_response *resp); */
+int decrement_freq_handler(uint8_t profile_index, uint8_t *args);
 
+int increment_freq_handler(uint8_t profiile_index, uint8_t *args);
+
+int set_freq_handler(uint8_t profile_index, uint8_t *args);
+
+int set_type_handler(uint8_t profile_index, uint8_t *args);
 
 #endif

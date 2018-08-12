@@ -121,6 +121,48 @@ void decrement_colors(uint8_t profile_index, uint16_t region, uint8_t rgb_flags,
   free(packet);
 }
 
+void set_freq(uint8_t profile_index, uint16_t region, uint16_t freq){
+  struct alienfx_msg * packet = malloc(sizeof(struct alienfx_msg));
+  packet->OP = SET_FREQ;
+  packet->profile_index = profile_index;
+  packet->args[0] = (uint8_t) (region >> 8) & 0xff;
+  packet->args[1] = (uint8_t) region & 0xff;
+  packet->args[2] = (uint8_t) (freq >> 8) & 0xff;
+  packet->args[3] = (uint8_t) freq & 0xff;
+
+  send_alienfx_msg(packet);
+
+  free(packet);
+}
+
+void increment_freq(uint8_t profile_index, uint16_t region, uint16_t freq){
+  struct alienfx_msg * packet = malloc(sizeof(struct alienfx_msg));
+  packet->OP = SET_FREQ;
+  packet->profile_index = profile_index;
+  packet->args[0] = (uint8_t) (region >> 8) & 0xff;
+  packet->args[1] = (uint8_t) region & 0xff;
+  packet->args[2] = (uint8_t) (freq >> 8) & 0xff;
+  packet->args[3] = (uint8_t) freq & 0xff;
+
+  send_alienfx_msg(packet);
+
+  free(packet);
+}
+
+void decrement_freq(uint8_t profile_index, uint16_t region, uint16_t freq){
+  struct alienfx_msg * packet = malloc(sizeof(struct alienfx_msg));
+  packet->OP = SET_FREQ;
+  packet->profile_index = profile_index;
+  packet->args[0] = (uint8_t) (region >> 8) & 0xff;
+  packet->args[1] = (uint8_t) region & 0xff;
+  packet->args[2] = (uint8_t) (freq >> 8) & 0xff;
+  packet->args[3] = (uint8_t) freq & 0xff;
+
+  send_alienfx_msg(packet);
+
+  free(packet);
+}
+
 void toggle_pause(uint8_t profile_index, uint16_t region){
   struct alienfx_msg * packet = malloc(sizeof(struct alienfx_msg));
 

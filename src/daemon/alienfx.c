@@ -24,11 +24,11 @@ void init_profiles(){
     for(int j = 0; j < NUM_REGIONS; j++){
       // TODO initialize according to config file
       profiles[i].regions[j] = (struct region_state) {
-          .r = 69,
+          .r = 0,
           .g = 69,
-          .b = 69,
+          .b = 0,
           .freq = 500,
-          .type = COMMAND_SET_COLOR,
+          .type = COMMAND_SET_BLINK_COLOR,
           .paused = false,
       };
     }
@@ -209,7 +209,7 @@ void close_and_exit(libusb_device_handle * handle, libusb_context * context){
   libusb_exit(context);
 }
 
-void single_write_to_fx(libusb_device_handle * handle, unsigned char * packet, int size){
+void single_write_to_fx(libusb_device_handle * handle, char * packet, int size){
   int unlimited_timeout = 0;
   int num_bytes_written = libusb_control_transfer(handle,
                                                   SEND_REQUEST_TYPE,
@@ -230,15 +230,77 @@ void single_write_to_fx(libusb_device_handle * handle, unsigned char * packet, i
 
 
 // this is where most of the work goes down
-void complete_write_to_fx(libusb_device_handle * handle, unsigned char data[], int data_size){
+void complete_write_to_fx(libusb_device_handle * handle, char data[], int data_size){
 
+  /* unsigned char data1[] = { START_BYTE, COMMAND_RESET, */
+  /*                           (unsigned char)RESET_ALL_LIGHTS_ON}; */
   unsigned char data1[] = { START_BYTE, COMMAND_RESET,
                             (unsigned char)RESET_ALL_LIGHTS_ON};
 
   single_write_to_fx(handle, (unsigned char*) data1, sizeof(data1));
   usleep(9000);
 
-  single_write_to_fx(handle, data, data_size);
+  /* single_write_to_fx(handle, data, data_size); */
+  /* char fuck1[] = */
+  /*   { */
+  /*     (char) START_BYTE, */
+  /*     (char) COMMAND_SET_MORPH_COLOR, */
+  /*     // block */
+  /*     0x01, */
+  /*     0x01, // 0xff for *all* regions */
+  /*     0x00, // is upper half of region */
+  /*     0x20, // is lower half of region */
+  /*     0, */
+  /*     0x80, */
+  /*     0, */
+  /*     0x50, */
+  /*     0, */
+  /*     0, */
+  /*   }; */
+  /* char fuck2[] = */
+  /*   { */
+  /*     (char) START_BYTE, */
+  /*     (char) COMMAND_SET_MORPH_COLOR, */
+  /*     // block */
+  /*     0x01, */
+  /*     0x02, // 0xff for *all* regions */
+  /*     0x00, // is upper half of region */
+  /*     0x80, // is lower half of region */
+  /*     0, */
+  /*     0x80, */
+  /*     0, */
+  /*     0x50, */
+  /*     0, */
+  /*     0, */
+  /*   }; */
+  char fuck1[] =
+    {
+      (char) START_BYTE,
+      (char) COMMAND_SET_BLINK_COLOR,
+      // block
+      0x01,
+      0x01, // 0xff for *all* regions
+      0x00, // is upper half of region
+      0x20, // is lower half of region
+      0x50,
+      0,
+      0,
+    };
+  char fuck2[] =
+    {
+      (char) START_BYTE,
+      (char) COMMAND_SET_BLINK_COLOR,
+      // block
+      0x01,
+      0xff, // 0xff for *all* regions
+      0x00, // is upper half of region
+      0x80, // is lower half of region
+      0,
+      0x80,
+      0,
+    };
+  single_write_to_fx(handle, fuck1, sizeof(fuck1));
+  single_write_to_fx(handle, fuck2, sizeof(fuck2));
 
   char data2[] = { START_BYTE, COMMAND_LOOP_BLOCK_END };
   single_write_to_fx(handle, data2, sizeof(data2));
@@ -248,7 +310,7 @@ void complete_write_to_fx(libusb_device_handle * handle, unsigned char data[], i
 }
 
 // boiler plate code wrapper to complete_write_to_fx
-void perform_action(unsigned char data[], int data_size){
+void perform_action(char data[], int data_size){
 	libusb_context*		context;
 	libusb_device_handle*	handle;
 
@@ -259,6 +321,7 @@ void perform_action(unsigned char data[], int data_size){
 	detach(handle, INTERFACE_NUMBER);
   // claim the interface
   claim_interface(handle, INTERFACE_NUMBER);
+
 
   /* complete_write_to_fx(handle, BLOCK_CHARGING, KB_FAR_LEFT, 0, 0, 0, INTERFACE_NUMBER); */
   complete_write_to_fx(handle, data, data_size);
@@ -271,29 +334,91 @@ void perform_action(unsigned char data[], int data_size){
   close_and_exit(handle, context);
 }
 
-void color_write(uint region, int r, int g, int b){
+void alienfx_write(uint region, int r, int g, int b, uint16_t freq, uint8_t type){
   // for some reason this isn't needed...maybe legacy?
   /* char reg1 = (char)((region >> 16) & 0xff); */
-  unsigned char reg1 = (unsigned char)((region >>  8) & 0xff);
-  unsigned char reg2 = (unsigned char)((region >>  0) & 0xff);
-  unsigned char data[] =
-    {
-      (unsigned char) START_BYTE,
-      (unsigned char) COMMAND_SET_COLOR,
-      0x10, // this needs to be 0xff (or at least 0x10) for some reason
-      0xff, // this also needs to be 0xff for some reason
-      reg1, // 0xff for *all* regions
-      reg2, // 0xff for *all* regions
-      r,
-      g,
-      b,
-    };
-  syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "yeet\n");
+  char reg1 = (unsigned char)((region >>  8) & 0xff);
+  char reg2 = (unsigned char)((region >>  0) & 0xff);
+  if(type == COMMAND_SET_COLOR){
+    /* char data[] = */
+    /*   { */
+    /*     (char) START_BYTE, */
+    /*     (char) COMMAND_SET_COLOR, */
+    /*     // block */
+    /*     0x10, // this needs to be 0xff (or at least 0x10) for some reason */
+    /*     0xff, // this also needs to be 0xff for some reason */
+    /*     reg1, // 0xff for *all* regions */
+    /*     reg2, // 0xff for *all* regions */
+    /*     r, */
+    /*     g, */
+    /*     b, */
+    /*   }; */
+    /* syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "yeet3\n"); */
+    /* perform_action(data, sizeof(data)); */
+    /* syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "yeet4\n"); */
+  } else if (type == COMMAND_SET_BLINK_COLOR){
+    unsigned char a[] = "AH";
+    char data1[] =
+      {
+        (char) START_BYTE,
+        (char) COMMAND_SET_MORPH_COLOR,
+        // block
+        0x01,
+        0x01, // 0xff for *all* regions
+        0x00, // is upper half of region
+        0x20, // is lower half of region
+        0,
+        0x80,
+        b,
+        0x50,
+        0,
+        0,
+      };
+    /* char data1[] = */
+    /*   { */
+    /*     (char) START_BYTE, */
+    /*     (char) COMMAND_SET_COLOR, */
+    /*     // block */
+    /*     0x10, // this needs to be 0xff (or at least 0x10) for some reason */
+    /*     0xff, // this also needs to be 0xff for some reason */
+    /*     reg1, // 0xff for *all* regions */
+    /*     reg2, // 0xff for *all* regions */
+    /*     r, */
+    /*     g, */
+    /*     b, */
+    /*   }; */
+    syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "yeet\n");
+    perform_action(data1, sizeof(data1));
+    /* uint8_t upper_half = (freq >> 8) & 0xff; */
+    /* uint8_t lower_half = freq & 0xff; */
+    /* char data2[] = { */
+    /*   COMMAND_SET_SPEED, */
+    /*   upper_half, */
+    /*   lower_half, */
+    /* }; */
+    /* perform_action(data2, sizeof(data2)); */
+    syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "yeet2\n");
+  } else{
+    return;
+  }
+}
+
+void freq_write(uint16_t freq){
+  char top_half = (freq >> 8) & 0xff;
+  char bottom_half = freq & 0xff;
+
+
+  syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "WEE\n");
+  unsigned char data[] = { START_BYTE, COMMAND_SET_SPEED, top_half, bottom_half};
   perform_action(data, sizeof(data));
-  syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "yeet2\n");
 }
 
 void write_entire_profile(struct alienfx_profile * profile){
+  // not current profile
+  if(profile != NULL && profile != profiles + current_profile_index){
+    return;
+  }
+  // the default
   struct alienfx_profile * prof = (profile == NULL) ? profiles + current_profile_index : profile;
 
   /* syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "ALIENFX! point 70 %p %p", profiles); */
@@ -301,30 +426,16 @@ void write_entire_profile(struct alienfx_profile * profile){
   syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "ALIENFX! point 7000 ");
   for(struct region_state * cur_region = prof->regions; cur_region < prof->regions + NUM_REGIONS; cur_region++){
     if(!cur_region->paused){
-      if(cur_region->type == COMMAND_SET_COLOR){
-        syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "setting red value as %x\n", cur_region->r);
-        color_write(get_flag(cur_region - prof->regions), cur_region->r, cur_region->g, cur_region->b);
-      }
-      if(cur_region->type == COMMAND_SET_BLINK_COLOR){
-        // TODO
-      }
+      syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "setting red value as %x\n", cur_region->r);
+      alienfx_write(get_flag(cur_region - prof->regions), cur_region->r, cur_region->g, cur_region->b, cur_region->freq, cur_region->type);
     } else{
       // if it's paused, write zeroes
-      color_write(get_flag(cur_region - prof->regions), 0, 0, 0);
+      alienfx_write(get_flag(cur_region - prof->regions), 0, 0, 0, 0, COMMAND_SET_COLOR);
     }
+    break;
   }
 }
 
-// TODO play with API figure out how to write to regions
-/* void freq_write(int freq){ */
-/*   char top_half = (freq >> 8) & 0xff; */
-/*   char bottom_half = freq & 0xff; */
-
-/*   unsigned char data[] = { START_BYTE, COMMAND_SET_SPEED, top_half, bottom_half}; */
-/*   perform_action(data); */
-/* } */
-
-// TODO just check less than blah
 bool is_valid_region(uint16_t region){
   switch(region){
   case KB_FAR_RIGHT:
@@ -369,8 +480,6 @@ int colors_handler(uint8_t profile_index, uint8_t * args, uint8_t color_flags){
   return 0;
 }
 
-// TODO figure out how to do entire profile writes
-
 // arg[0] specifies upper half of region
 // arg[1] specifies lower half of region
 // arg[2] specifies which of rgb to set
@@ -388,39 +497,29 @@ int decrement_colors_handler(uint8_t profile_index, uint8_t *args){
   return colors_handler(profile_index, args, INTERNAL_DEC);
 }
 
-// arg 0 represents upper half of new freq
-// arg 1 represents lower half of new freq
+// arg[0] specifies upper half of region
+// arg[1] specifies lower half of region
+// arg[2] represents upper half of new freq
+// arg[3] represents lower half of new freq
 // TODO may not work depending on whether or not I *have* to do increments of 100
 // TODO implement with the profile write thingy
-/* int freq_handler(uint8_t *args, struct alienfx_response * resp, uint8_t flags){ */
-/*   int16_t new_val = (args[0] << 8) | args[1]; */
-/*   switch(flags){ */
-/*   case INTERNAL_SET: */
-/*     freq = new_val; */
-/*   case INTERNAL_INC: */
-/*     freq += new_val; */
-/*   case INTERNAL_DEC: */
-/*     freq -= new_val; */
-/*   } */
+int freq_handler(uint8_t profile_index, uint8_t *args, uint8_t flags){
+  uint16_t region = (args[0] << 8) | args[1];
+  int16_t new_freq = (args[2] << 8) | args[3];
+  update_profile(profile_index, region, 0, 0, 0, new_freq, 0, 0, INTERNAL_USE_FREQ, flags);
+  write_entire_profile(profiles + current_profile_index);
+  return 0;
+}
 
-/*   if(freq > MAX_SPEED) */
-/*     freq = MAX_SPEED; */
-/*   if(freq < MIN_SPEED) */
-/*     freq = MIN_SPEED; */
-
-/*   freq_write(freq); */
-/*   return 0; */
-/* } */
-
-/* int set_freq_handler(uint8_t *args, struct alienfx_response *resp){ */
-/*   return freq_handler(args, resp, INTERNAL_SET); */
-/* } */
-/* int increment_freq_handler(uint8_t *args, struct alienfx_response *resp){ */
-/*   return freq_handler(args, resp, INTERNAL_INC); */
-/* } */
-/* int decrement_freq_handler(uint8_t *args, struct alienfx_response *resp){ */
-/*   return freq_handler(args, resp, INTERNAL_DEC); */
-/* } */
+int set_freq_handler(uint8_t profile_index, uint8_t *args){
+  return freq_handler(profile_index, args, INTERNAL_SET);
+}
+int increment_freq_handler(uint8_t profile_index, uint8_t *args){
+  return freq_handler(profile_index, args, INTERNAL_INC);
+}
+int decrement_freq_handler(uint8_t profile_index, uint8_t *args){
+  return freq_handler(profile_index, args, INTERNAL_DEC);
+}
 
 // arg[0] specifies upper half of region
 // arg[1] specifies lower half of region
@@ -515,6 +614,19 @@ int set_profile_handler(uint8_t profile_index, uint8_t * args){
   if(profile_index < NUM_PROFILES){
     current_profile_index = profile_index;
     write_entire_profile(profiles + current_profile_index);
+    return 0;
+  }
+  return -1;
+}
+
+// args[0] is upper half region
+// args[1] is lower half region
+// args[2] is type of region
+int set_type_handler(uint8_t profile_index, uint8_t *args){
+  if(profile_index < NUM_PROFILES){
+    uint16_t region = (args[0] << 8) | args[1];
+    update_profile(profile_index, region, 0, 0, 0, 0, args[2], 0, INTERNAL_USE_TYPE, INTERNAL_SET);
+    write_entire_profile(profiles + profile_index);
     return 0;
   }
   return -1;
