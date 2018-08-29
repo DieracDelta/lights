@@ -1,6 +1,6 @@
 # What is this? #
 
-A work in progress openrc-style daemon and corresponding library for controlling the lights on the Alienware 15 R3 model laptop. (Fuck systemd. I won't be supporting them.)
+A work in progress openrc-style daemon and corresponding library for controlling the lights on the Alienware 15 R3 model laptop. 
 
 You can also interface with the daemon in a higher level language such as python, as all it does is listen on a unix socket. However, I've opted to write my library in C, as most of *my* use cases involve incorporating the library into c programs.
 
@@ -27,8 +27,6 @@ sudo rc-service alienfxd enable
 ## usage ##
 
 Communication with the daemon is essentially done over a socket. My implementation of commands have been done over a datagram socket via a specific protocol that I'll eventually get around to writing actual docs for. But for now, if you're curious, the code is pretty well documented. Have a read :)
-
-Note that the daemon writes to 
 
 # Progress #
   * [ ] Underlying protocol
