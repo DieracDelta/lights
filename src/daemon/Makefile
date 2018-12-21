@@ -20,10 +20,10 @@ main: main.o alienfx.o
 
 
 #.c.o:
-	#@echo [Compile] $<
-	#@$(CC) -c $(CFLAGS) $< -o $@
+#@echo [Compile] $<
+#@$(CC) -c $(CFLAGS) $< -o $@
 
-install: 
+install:
 	@cp main alienfxd
 	@echo [Install] $<
 	@cp -f lightdaemon /etc/init.d/lightdaemon

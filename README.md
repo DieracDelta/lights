@@ -1,20 +1,20 @@
 # What is this? #
 
-A work in progress openrc-style daemon and corresponding library for controlling the lights on the Alienware 15 R3 model laptop. 
+A work in progress openrc-style daemon and corresponding library for controlling the lights on the Alienware 15 R3 model laptop. It currently does not support systemd, although adding support would presumably be as simple as adding a oneshot service file.
 
-You can also interface with the daemon in a higher level language such as python, as all it does is listen on a unix socket. However, I've opted to write my library in C, as most of *my* use cases involve incorporating the library into c programs.
+You can also interface with the daemon in a higher level language such as python, as all it does is listen on a unix socket. However, I've opted to write my library in C, as my use cases involve incorporating the library into c programs.
 
 
 # How to configure alienfxD: #
 
 ## dependencies ##
 
-This daemon depends on lusb-1.0 (you do need to specify the version) and some sort of logging daemon implementation for the use of syslog (I'm using syslog-ng).
+This daemon depends on lusb-1.0 (you do need to specify the version) and some sort of logging daemon implementation for the use of syslog (I'm using syslog-ng). You also need an Alienware R15 laptop.
 
 ## installation ##
 
 ```bash
-git clone http://diracdelta.me:3000/jrestivo/alienware_15_r3_light_daemon.git lightdaemon
+git clone https://gitea.diracdelta.me/jrestivo/alienware_15_r3_light_daemon.git lightdaemon
 cd lightdaemon/src/daemon
 sudo make clean && sudo make && sudo make install
 cd ../src/library
@@ -31,13 +31,16 @@ Communication with the daemon is essentially done over a socket. My implementati
 # Progress #
   * [ ] Underlying protocol
     * [WIP] flashing between two different colors
-    * [ ] other things you can do that I haven't figured out yet
+    * [ ] reverse engineer morph
+    * [ ] reverse engineer flashing between colors
     * [x] get state
     * [x] set rgb and freq
     * [x] toggle lights on/off
-  * [ ] library portion
+  * [x] library portion
   * [x] daemon portion
   * [x] datagram socket communication + set a protocol between client and daemon
+  * [ ] library for other languages
+    * [ ] python
+    * [ ] ruby
   * [ ] saving + persistent state between boots stored as json on a per-boot basis
   * [WIP] clean up code and makefiles
-

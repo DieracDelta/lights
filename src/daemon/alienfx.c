@@ -54,8 +54,7 @@ int get_flag(int j){
   return 1 << j;
 }
 
-// FIXME clean this up bois
-// TODO might need to and the values with 0xff to reset back to zero
+// FIXME clean this up
 int update_profile(uint8_t profile, uint16_t region_flags, uint8_t r, uint8_t g, uint8_t b, uint16_t freq, uint8_t type, bool paused, uint8_t use_flags, uint8_t op_flags){
   // outta bounds
   if(profile >= NUM_PROFILES){
@@ -66,11 +65,8 @@ int update_profile(uint8_t profile, uint16_t region_flags, uint8_t r, uint8_t g,
     // undefined
     int flag_val = get_flag(i);
     if(flag_val & region_flags){
-      syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "hit hidey ho\n");
       if(use_flags & INTERNAL_USE_R){
-        syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "hit hidey ho1\n");
         if(op_flags & INTERNAL_SET){
-          syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "hit hidey ho42\n");
           profiles[profile].regions[i].r = r;
         }
         else if (op_flags & INTERNAL_INC){
@@ -170,7 +166,6 @@ void initialize(libusb_context** context, libusb_device_handle** handle, unsigne
 }
 
 void detach(libusb_device_handle* handle, int interface_number) {
-  // alternative to claim_interface, I think?
 	if (libusb_kernel_driver_active(handle, interface_number)){
 		int success = libusb_detach_kernel_driver(handle, interface_number);
     if (success < 0){
@@ -237,11 +232,11 @@ void complete_write_to_fx(libusb_device_handle * handle, char data[], int data_s
   unsigned char data1[] = { START_BYTE, COMMAND_RESET,
                             (unsigned char)RESET_ALL_LIGHTS_ON};
 
-  single_write_to_fx(handle, (unsigned char*) data1, sizeof(data1));
+  single_write_to_fx(handle, (char*) data1, sizeof(data1));
   usleep(9000);
 
   /* single_write_to_fx(handle, data, data_size); */
-  /* char fuck1[] = */
+  /* char c1[] = */
   /*   { */
   /*     (char) START_BYTE, */
   /*     (char) COMMAND_SET_MORPH_COLOR, */
@@ -257,7 +252,7 @@ void complete_write_to_fx(libusb_device_handle * handle, char data[], int data_s
   /*     0, */
   /*     0, */
   /*   }; */
-  /* char fuck2[] = */
+  /* char c2[] = */
   /*   { */
   /*     (char) START_BYTE, */
   /*     (char) COMMAND_SET_MORPH_COLOR, */
@@ -273,7 +268,7 @@ void complete_write_to_fx(libusb_device_handle * handle, char data[], int data_s
   /*     0, */
   /*     0, */
   /*   }; */
-  char fuck1[] =
+  char c1[] =
     {
       (char) START_BYTE,
       (char) COMMAND_SET_BLINK_COLOR,
@@ -286,7 +281,7 @@ void complete_write_to_fx(libusb_device_handle * handle, char data[], int data_s
       0,
       0,
     };
-  char fuck2[] =
+  char c2[] =
     {
       (char) START_BYTE,
       (char) COMMAND_SET_BLINK_COLOR,
@@ -299,8 +294,8 @@ void complete_write_to_fx(libusb_device_handle * handle, char data[], int data_s
       0x80,
       0,
     };
-  single_write_to_fx(handle, fuck1, sizeof(fuck1));
-  single_write_to_fx(handle, fuck2, sizeof(fuck2));
+  single_write_to_fx(handle, c1, sizeof(c1));
+  single_write_to_fx(handle, c2, sizeof(c2));
 
   char data2[] = { START_BYTE, COMMAND_LOOP_BLOCK_END };
   single_write_to_fx(handle, data2, sizeof(data2));
@@ -530,104 +525,4 @@ int toggle_pause_handler(uint8_t profile_index, uint8_t *args){
       update_profile(profile_index, region, 0, 0, 0, 0, 0, !profiles[profile_index].regions[i].paused, INTERNAL_USE_PAUSE, INTERNAL_SET);
   }
   return 0;
-}
-
-// args don't matter for now
-/* int toggle_flash_handler(uint8_t *args, struct alienfx_response *resp){ */
-/*   if(t == COMMAND_SET_COLOR){ */
-/*     t = COMMAND_SET_BLINK_COLOR; */
-/*   } */
-/*   else if (t == COMMAND_SET_BLINK_COLOR){ */
-/*     t = COMMAND_SET_COLOR; */
-/*   } */
-/*   else { */
-/*     return -1; */
-/*   } */
-
-/*   return 0; */
-/* } */
-
-/* void low_power_mode(bool turnOn){ */
-/*   /\* check_and_initialize_lights(); *\/ */
-/*   if(turnOn){ */
-/*     if(read_file(LOW_POWER_PATH) == 1){ */
-/*       return; */
-/*     } */
-/*     libusb_context*		context; */
-/*     libusb_device_handle*	handle; */
-/*     //enable */
-/*     initialize(&context, &handle, ALIENWARE_VENDORID, ALIENWARE_PRODUCTID); */
-/*     // detach any current driver */
-/*     detach(handle, INTERFACE_NUMBER); */
-/*     // claim the interface */
-/*     claim_interface(handle, INTERFACE_NUMBER); */
-
-/*     /\* complete_write_to_fx(handle, BLOCK_CHARGING, KB_FAR_LEFT, 0, 0, 0, INTERFACE_NUMBER); *\/ */
-/*     unsigned char data1[] = { START_BYTE, COMMAND_RESET, */
-/*                               (unsigned char)RESET_ALL_LIGHTS_ON}; */
-
-/*     single_write_to_fx(handle, data1, sizeof(data1)); */
-/*     usleep(9001); */
-
-/*     char data[] = { START_BYTE, COMMAND_SET_BLINK_COLOR, */
-/*                     0x01, */
-/*                     0xff, // 0xff for *all* regions */
-/*                     0xff, // 0xff for *all* regions */
-/*                     0xff, // 0xff for *all* regions */
-/*                     0xff, */
-/*                     0, */
-/*                     0}; */
-/*     single_write_to_fx(handle, data, sizeof(data)); */
-/*     usleep(9001); */
-/*     char data2[] = { START_BYTE, COMMAND_LOOP_BLOCK_END }; */
-/*     single_write_to_fx(handle, data2, sizeof(data2)); */
-/*     char data3[] = { START_BYTE, COMMAND_TRANSMIT_EXECUTE}; */
-/*     single_write_to_fx(handle, data3, sizeof(data3)); */
-/*     release_interface(handle, INTERFACE_NUMBER); */
-/*     attach(handle, INTERFACE_NUMBER); */
-/*     close_and_exit(handle, context); */
-/*     update_file(LOW_POWER_PATH, 1); */
-/*   } else{ */
-/*     // disable */
-/*     if(read_file(LOW_POWER_PATH) != 0){ */
-/*       // I just did this cuz I changed API */
-/*       /\* perform_action(0xffffff, r, g, b, t, BLOCK_CHARGING); *\/ */
-/*       update_file(LOW_POWER_PATH, 0); */
-/*     } */
-/*   } */
-/* } */
-
-
-int increment_profile_handler(uint8_t profile_index, uint8_t * args){
-  current_profile_index = (current_profile_index + 1) % NUM_PROFILES;
-  write_entire_profile(profiles + current_profile_index);
-  return 0;
-}
-
-int decrement_profile_handler(uint8_t profile_index, uint8_t * args){
-  current_profile_index = (current_profile_index - 1) % NUM_PROFILES;
-  write_entire_profile(profiles + current_profile_index);
-  return 0;
-}
-
-int set_profile_handler(uint8_t profile_index, uint8_t * args){
-  if(profile_index < NUM_PROFILES){
-    current_profile_index = profile_index;
-    write_entire_profile(profiles + current_profile_index);
-    return 0;
-  }
-  return -1;
-}
-
-// args[0] is upper half region
-// args[1] is lower half region
-// args[2] is type of region
-int set_type_handler(uint8_t profile_index, uint8_t *args){
-  if(profile_index < NUM_PROFILES){
-    uint16_t region = (args[0] << 8) | args[1];
-    update_profile(profile_index, region, 0, 0, 0, 0, args[2], 0, INTERNAL_USE_TYPE, INTERNAL_SET);
-    write_entire_profile(profiles + profile_index);
-    return 0;
-  }
-  return -1;
 }
