@@ -21,6 +21,7 @@ void decrement_freq(uint8_t profile_index, uint16_t region, uint16_t freq);
 
 void toggle_pause(uint8_t profile_index, uint16_t region);
 
+// TODO
 void inc_profile();
 
 void dec_profile();

@@ -5,7 +5,7 @@ const PORT = 3000
 ///////// p2p communication //////
 
 const P2PPORT = 4000;
-const PEERID = '42069420420';
+const PEERID = '420694204200';
 const peerLib = require('peerjs-nodejs');
 var curConn = null;
 

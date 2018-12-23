@@ -24,6 +24,10 @@ const char SERVERSOCKETPATH[] = "/tmp/alienfxsocket.sock";
 // TODO store state elsewhere
 const char STATEFILEPATH[] = "~/.alienfx.yaml";
 
+int do_add(int a, int b){
+  return a + b;
+}
+
 void send_alienfx_msg(struct alienfx_msg * packet){
 
 
