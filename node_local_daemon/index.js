@@ -21,7 +21,7 @@ var lib = ffi.Library(mathlibLoc, {
 //////// p2p stuff ////////
 
 const peerLib = require('peerjs-nodejs');
-const PEERID = '420694204200';
+const PEERID = '42069';
 
 var peer = new peerLib();
 
@@ -31,13 +31,15 @@ var conn = peer.connect(PEERID);
 conn.serialization = 'json'
 conn.on('data', (data) => {
     const rgbRegex = /^[a-fA-F0-9]{6}$/;
-    const rgbval = data.param;
+    var rgbval = JSON.parse(data)['rgbVal'];
+    console.log(data + rgbval + Object.keys(JSON.parse(data)));
     if (rgbRegex.test(rgbval)) {
         // TODO
         const red = parseInt(rgbval.substring(0, 2), 16);
         const green = parseInt(rgbval.substring(2, 4));
         const blue = parseInt(rgbval.substring(4, 6));
         if (0 <= red && red <= 0xff && 0 <= green && green <= 0xff && 0 <= blue && blue <= 0xff) {
+            console.log("yeet")
             // doing the default one ...
             lib.set_profile(0x0);
             lib.set_colors(0x0, 0xffff, 0xff, red, green, blue);
