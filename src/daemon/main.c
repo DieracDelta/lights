@@ -29,16 +29,18 @@ const char STATEPATH[] = "/var/lib/alienfx/";
 static int pid_fd;
 static int on;
 
-int stop_handler(uint8_t garbage, uint8_t * args){
+int stop_handler(){
   on = 0;
   return 0;
 }
 
 
 
+
+
 // takes args and fills out response/performs actions
 int (*response_handlers[11])(uint8_t, uint8_t*) = {
-  stop_handler,
+  (int (*)(uint8_t, uint8_t *)) stop_handler,
   set_colors_handler,
   increment_colors_handler,
   decrement_colors_handler,
@@ -60,7 +62,7 @@ void plog(const char * fmt){
   #endif
 }
 
-void sig_handler(const int signal){
+void sig_handler(){
 
   struct alienfx_msg * packet = malloc(sizeof(struct alienfx_msg));
   packet->OP = TERMINATE_ALIENFX;
@@ -138,16 +140,18 @@ int main(){
     close(fd);
   }
   #endif
+  plog("HI GUYS 7");
 
   // write pid to PIDFILEPATH
   // initially st had a zero in it but that's equivalent to null soo
-  struct stat st = {};
-  if(stat(PIDPATH, &st) < 0) {
-    mkdir(PIDPATH, 0755);
-  }
+  /* struct stat st = {}; */
+  /* if(stat(PIDPATH, &st) < 0) { */
+  /*   mkdir(PIDPATH, 0755); */
+  /* } */
 
   pid_fd = open(PIDFILEPATH, O_RDWR|O_CREAT, 0755);
   if(pid_fd < 0) exit(EXIT_FAILURE);
+  plog("HI GUYS 8");
 
   // F_TLOCK because we don't want blocking, we want error if the file is already locked
   if(lockf(pid_fd, F_TLOCK, 0) < 0) exit(EXIT_FAILURE);
@@ -223,7 +227,7 @@ int main(){
     // TODO else send error back
     if(packet->OP < NUM_OPS){
       plog("im doing stuff");
-      syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "FUCK shit man yeet %x \n", packet->OP);
+      syslog(LOG_MAKEPRI(LOG_DAEMON, LOG_INFO), "the packet opcode is %x \n", packet->OP);
       int success = response_handlers[packet->OP](packet->profile_index, packet->args);
       if(success < 0){
         plog("failure at responding to something");

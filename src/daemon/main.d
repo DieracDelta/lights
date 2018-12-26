@@ -5,22 +5,23 @@ main.o: main.c /usr/include/stdc-predef.h /usr/include/stdlib.h \
  /usr/include/gnu/stubs-64.h \
  /usr/lib/gcc/x86_64-pc-linux-gnu/6.4.0/include/stddef.h \
  /usr/include/bits/waitflags.h /usr/include/bits/waitstatus.h \
- /usr/include/bits/floatn.h /usr/include/sys/types.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/bits/types/clock_t.h /usr/include/bits/types/clockid_t.h \
- /usr/include/bits/types/time_t.h /usr/include/bits/types/timer_t.h \
- /usr/include/bits/stdint-intn.h /usr/include/endian.h \
- /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
- /usr/include/bits/byteswap-16.h /usr/include/bits/uintn-identity.h \
- /usr/include/sys/select.h /usr/include/bits/select.h \
- /usr/include/bits/types/sigset_t.h /usr/include/bits/types/__sigset_t.h \
+ /usr/include/bits/floatn.h /usr/include/bits/floatn-common.h \
+ /usr/include/sys/types.h /usr/include/bits/types.h \
+ /usr/include/bits/typesizes.h /usr/include/bits/types/clock_t.h \
+ /usr/include/bits/types/clockid_t.h /usr/include/bits/types/time_t.h \
+ /usr/include/bits/types/timer_t.h /usr/include/bits/stdint-intn.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/bits/byteswap-16.h \
+ /usr/include/bits/uintn-identity.h /usr/include/sys/select.h \
+ /usr/include/bits/select.h /usr/include/bits/types/sigset_t.h \
+ /usr/include/bits/types/__sigset_t.h \
  /usr/include/bits/types/struct_timeval.h \
  /usr/include/bits/types/struct_timespec.h \
  /usr/include/bits/pthreadtypes.h /usr/include/bits/thread-shared-types.h \
  /usr/include/bits/pthreadtypes-arch.h /usr/include/alloca.h \
  /usr/include/bits/stdlib-float.h /usr/include/stdio.h \
  /usr/include/bits/types/__FILE.h /usr/include/bits/types/FILE.h \
- /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/bits/libio.h /usr/include/bits/_G_config.h \
  /usr/include/bits/types/__mbstate_t.h \
  /usr/lib/gcc/x86_64-pc-linux-gnu/6.4.0/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
@@ -30,13 +31,14 @@ main.o: main.c /usr/include/stdc-predef.h /usr/include/stdlib.h \
  /usr/include/sys/stat.h /usr/include/bits/stat.h /usr/include/signal.h \
  /usr/include/bits/signum.h /usr/include/bits/signum-generic.h \
  /usr/include/bits/types/sig_atomic_t.h \
- /usr/include/bits/types/siginfo_t.h /usr/include/bits/types/sigval_t.h \
+ /usr/include/bits/types/siginfo_t.h /usr/include/bits/types/__sigval_t.h \
  /usr/include/bits/siginfo-arch.h /usr/include/bits/siginfo-consts.h \
- /usr/include/bits/types/sigevent_t.h /usr/include/bits/sigevent-consts.h \
- /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h \
- /usr/include/bits/types/stack_t.h /usr/include/sys/ucontext.h \
- /usr/include/bits/sigstack.h /usr/include/bits/ss_flags.h \
- /usr/include/bits/types/struct_sigstack.h /usr/include/bits/sigthread.h \
+ /usr/include/bits/types/sigval_t.h /usr/include/bits/types/sigevent_t.h \
+ /usr/include/bits/sigevent-consts.h /usr/include/bits/sigaction.h \
+ /usr/include/bits/sigcontext.h /usr/include/bits/types/stack_t.h \
+ /usr/include/sys/ucontext.h /usr/include/bits/sigstack.h \
+ /usr/include/bits/ss_flags.h /usr/include/bits/types/struct_sigstack.h \
+ /usr/include/bits/sigthread.h \
  /usr/lib/gcc/x86_64-pc-linux-gnu/6.4.0/include/stdbool.h \
  /usr/include/string.h /usr/include/bits/types/locale_t.h \
  /usr/include/bits/types/__locale_t.h /usr/include/strings.h \
@@ -78,6 +80,8 @@ main.o: main.c /usr/include/stdc-predef.h /usr/include/stdlib.h \
 /usr/include/bits/waitstatus.h:
 
 /usr/include/bits/floatn.h:
+
+/usr/include/bits/floatn-common.h:
 
 /usr/include/sys/types.h:
 
@@ -133,9 +137,9 @@ main.o: main.c /usr/include/stdc-predef.h /usr/include/stdlib.h \
 
 /usr/include/bits/types/FILE.h:
 
-/usr/include/libio.h:
+/usr/include/bits/libio.h:
 
-/usr/include/_G_config.h:
+/usr/include/bits/_G_config.h:
 
 /usr/include/bits/types/__mbstate_t.h:
 
@@ -171,11 +175,13 @@ main.o: main.c /usr/include/stdc-predef.h /usr/include/stdlib.h \
 
 /usr/include/bits/types/siginfo_t.h:
 
-/usr/include/bits/types/sigval_t.h:
+/usr/include/bits/types/__sigval_t.h:
 
 /usr/include/bits/siginfo-arch.h:
 
 /usr/include/bits/siginfo-consts.h:
+
+/usr/include/bits/types/sigval_t.h:
 
 /usr/include/bits/types/sigevent_t.h:
 

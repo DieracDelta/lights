@@ -5,9 +5,6 @@
 #include <stdint.h>
 #include "protocol.h"
 
-// TODO remove
-static struct alienfx_profile * profiles;
-
 void init_profiles();
 
 void write_entire_profile(struct alienfx_profile * prof);

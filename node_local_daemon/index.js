@@ -36,12 +36,12 @@ conn.on('data', (data) => {
     if (rgbRegex.test(rgbval)) {
         // TODO
         const red = parseInt(rgbval.substring(0, 2), 16);
-        const green = parseInt(rgbval.substring(2, 4));
-        const blue = parseInt(rgbval.substring(4, 6));
+        const green = parseInt(rgbval.substring(2, 4), 16);
+        const blue = parseInt(rgbval.substring(4, 6), 16);
         if (0 <= red && red <= 0xff && 0 <= green && green <= 0xff && 0 <= blue && blue <= 0xff) {
             console.log("yeet")
             // doing the default one ...
-            lib.set_profile(0x0);
+            // lib.set_profile(0x0);
             lib.set_colors(0x0, 0xffff, 0xff, red, green, blue);
         }
         console.log("success!");

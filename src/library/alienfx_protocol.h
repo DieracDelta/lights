@@ -48,7 +48,7 @@
 #define NOT_DEFINED_2_POS 9
 
 // ACTION FLAGS
-#define RED_FLAG 0x0
+#define RED_FLAG 0x1
 #define GREEN_FLAG 0x2
 #define BLUE_FLAG 0x4
 #define FREQ_FLAG 0x8

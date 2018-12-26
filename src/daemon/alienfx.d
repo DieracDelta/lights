@@ -11,19 +11,20 @@ alienfx.o: alienfx.c /usr/include/stdc-predef.h /usr/include/alienfx.h \
  /usr/include/bits/stdint-uintn.h /usr/include/stdio.h \
  /usr/lib/gcc/x86_64-pc-linux-gnu/6.4.0/include/stddef.h \
  /usr/include/bits/types/__FILE.h /usr/include/bits/types/FILE.h \
- /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/bits/libio.h /usr/include/bits/_G_config.h \
  /usr/include/bits/types/__mbstate_t.h \
  /usr/lib/gcc/x86_64-pc-linux-gnu/6.4.0/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/stdlib.h /usr/include/bits/waitflags.h \
  /usr/include/bits/waitstatus.h /usr/include/bits/floatn.h \
- /usr/include/sys/types.h /usr/include/bits/types/clock_t.h \
- /usr/include/bits/types/clockid_t.h /usr/include/bits/types/time_t.h \
- /usr/include/bits/types/timer_t.h /usr/include/endian.h \
- /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
- /usr/include/bits/byteswap-16.h /usr/include/bits/uintn-identity.h \
- /usr/include/sys/select.h /usr/include/bits/select.h \
- /usr/include/bits/types/sigset_t.h /usr/include/bits/types/__sigset_t.h \
+ /usr/include/bits/floatn-common.h /usr/include/sys/types.h \
+ /usr/include/bits/types/clock_t.h /usr/include/bits/types/clockid_t.h \
+ /usr/include/bits/types/time_t.h /usr/include/bits/types/timer_t.h \
+ /usr/include/endian.h /usr/include/bits/endian.h \
+ /usr/include/bits/byteswap.h /usr/include/bits/byteswap-16.h \
+ /usr/include/bits/uintn-identity.h /usr/include/sys/select.h \
+ /usr/include/bits/select.h /usr/include/bits/types/sigset_t.h \
+ /usr/include/bits/types/__sigset_t.h \
  /usr/include/bits/types/struct_timeval.h \
  /usr/include/bits/types/struct_timespec.h \
  /usr/include/bits/pthreadtypes.h /usr/include/bits/thread-shared-types.h \
@@ -88,9 +89,9 @@ alienfx.o: alienfx.c /usr/include/stdc-predef.h /usr/include/alienfx.h \
 
 /usr/include/bits/types/FILE.h:
 
-/usr/include/libio.h:
+/usr/include/bits/libio.h:
 
-/usr/include/_G_config.h:
+/usr/include/bits/_G_config.h:
 
 /usr/include/bits/types/__mbstate_t.h:
 
@@ -107,6 +108,8 @@ alienfx.o: alienfx.c /usr/include/stdc-predef.h /usr/include/alienfx.h \
 /usr/include/bits/waitstatus.h:
 
 /usr/include/bits/floatn.h:
+
+/usr/include/bits/floatn-common.h:
 
 /usr/include/sys/types.h:
 
