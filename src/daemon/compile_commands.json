@@ -1,0 +1,30 @@
+[
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-Wall",
+            "-Wpedantic",
+            "-Wextra",
+            "-o",
+            "main.o",
+            "main.c"
+        ],
+        "directory": "/home/dieraca/summer_18_projs/lightdaemon/src/daemon",
+        "file": "main.c"
+    },
+    {
+        "arguments": [
+            "gcc",
+            "-c",
+            "-Wall",
+            "-Wpedantic",
+            "-Wextra",
+            "-o",
+            "alienfx.o",
+            "alienfx.c"
+        ],
+        "directory": "/home/dieraca/summer_18_projs/lightdaemon/src/daemon",
+        "file": "alienfx.c"
+    }
+]

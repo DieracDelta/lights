@@ -27,26 +27,38 @@ var peer = new peerLib();
 
 peer.on('open', (id) => console.log(`peer is id ${id}`));
 
-var conn = peer.connect(PEERID);
-conn.serialization = 'json'
-conn.on('data', (data) => {
-    const rgbRegex = /^[a-fA-F0-9]{6}$/;
-    var rgbval = JSON.parse(data)['rgbVal'];
-    console.log(data + rgbval + Object.keys(JSON.parse(data)));
-    if (rgbRegex.test(rgbval)) {
-        // TODO
-        const red = parseInt(rgbval.substring(0, 2), 16);
-        const green = parseInt(rgbval.substring(2, 4), 16);
-        const blue = parseInt(rgbval.substring(4, 6), 16);
-        if (0 <= red && red <= 0xff && 0 <= green && green <= 0xff && 0 <= blue && blue <= 0xff) {
-            console.log("yeet")
-            // doing the default one ...
-            // lib.set_profile(0x0);
-            lib.set_colors(0x0, 0xffff, 0xff, red, green, blue);
+var conn = null;
+reconnect();
+
+function reconnect() {
+    conn = peer.connect(PEERID);
+    conn.serialization = 'json'
+    conn.on('data', (data) => {
+        const rgbRegex = /^[a-fA-F0-9]{6}$/;
+        var rgbval = JSON.parse(data)['rgbVal'];
+        var region = parseInt(JSON.parse(data)['location'], 16);
+        console.log(data + rgbval + Object.keys(JSON.parse(data)));
+        if (rgbRegex.test(rgbval)) {
+            // TODO
+            const red = parseInt(rgbval.substring(0, 2), 16);
+            const green = parseInt(rgbval.substring(2, 4), 16);
+            const blue = parseInt(rgbval.substring(4, 6), 16);
+            if (0 <= red && red <= 0xff && 0 <= green &&
+                green <= 0xff && 0 <= blue && blue <= 0xff &&
+                0 <= region && region <= 0xffff
+            ) {
+                // doing the default one ...
+                // lib.set_profile(0x0);
+                lib.set_colors(0x0, region, 0xff, red, green, blue);
+            }
+            console.log("success!");
+        } else {
+            console.log("incorrect formatting ... ?");
         }
-        console.log("success!");
-    } else {
-        console.log("incorrect formatting ... ?");
-    }
-    console.log(data);
-});
+        console.log(data);
+    });
+    conn.on('close', () => {
+        console.log("disconencted!");
+        reconnect();
+    });
+}
